@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import AddPersonModal from '@/components/AddPersonModal';
+import AddSampleDataButton from '@/components/AddSampleDataButton';
 
 interface Person {
   id: number;
@@ -220,6 +221,7 @@ export default function IndividualsManagement() {
 
                       تحديث البيانات
                     </Button>
+                    <AddSampleDataButton onDataAdded={fetchPersons} />
                   </div>
                 </div>
 

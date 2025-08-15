@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import AddLeaderModal from '@/components/AddLeaderModal';
+import AddSampleDataButton from '@/components/AddSampleDataButton';
 
 interface Leader {
   id: number;
@@ -201,6 +202,7 @@ export default function LeadersManagement() {
 
                     تحديث البيانات
                   </Button>
+                  <AddSampleDataButton onDataAdded={fetchLeaders} />
                 </div>
               </div>
 

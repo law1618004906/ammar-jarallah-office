@@ -38,7 +38,7 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
   const { toast } = useToast();
 
   const handleInputChange = (field: keyof LeaderFormData, value: string | number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value
     }));
@@ -68,7 +68,7 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -154,8 +154,8 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
                 onChange={(e) => handleInputChange('full_name', e.target.value)}
                 placeholder="أدخل الاسم الثلاثي كاملاً"
                 className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400"
-                required
-              />
+                required />
+
             </div>
 
             {/* رقم الهاتف */}
@@ -169,8 +169,8 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="07xxxxxxxxx"
-                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400"
-              />
+                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
+
             </div>
 
             {/* عنوان السكن */}
@@ -184,8 +184,8 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
                 value={formData.residence}
                 onChange={(e) => handleInputChange('residence', e.target.value)}
                 placeholder="المحافظة - المنطقة"
-                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400"
-              />
+                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
+
             </div>
 
             {/* مكان العمل */}
@@ -199,8 +199,8 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
                 value={formData.workplace}
                 onChange={(e) => handleInputChange('workplace', e.target.value)}
                 placeholder="الشركة أو المؤسسة"
-                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400"
-              />
+                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
+
             </div>
 
             {/* رقم المحطة */}
@@ -214,8 +214,8 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
                 value={formData.station_number}
                 onChange={(e) => handleInputChange('station_number', e.target.value)}
                 placeholder="رقم المحطة"
-                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400"
-              />
+                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
+
             </div>
 
             {/* معلومات المركز */}
@@ -229,8 +229,8 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
                 value={formData.center_info}
                 onChange={(e) => handleInputChange('center_info', e.target.value)}
                 placeholder="اسم وموقع المركز الانتخابي"
-                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400"
-              />
+                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
+
             </div>
 
             {/* عدد الأصوات */}
@@ -245,8 +245,8 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
                 value={formData.votes_count}
                 onChange={(e) => handleInputChange('votes_count', parseInt(e.target.value) || 0)}
                 placeholder="0"
-                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400"
-              />
+                className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
+
             </div>
           </div>
 
@@ -256,30 +256,30 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
               variant="outline"
               onClick={() => setIsOpen(false)}
               className="h-12 px-8 text-lg font-semibold"
-              disabled={isLoading}
-            >
+              disabled={isLoading}>
+
               إلغاء
             </Button>
             <Button
               type="submit"
               className="btn-formal h-12 px-8 text-lg font-semibold"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
+              disabled={isLoading}>
+
+              {isLoading ?
+              <>
                   <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
                   جاري الحفظ...
-                </>
-              ) : (
-                <>
+                </> :
+
+              <>
                   <Crown size={20} className="ml-2" />
                   حفظ القائد
                 </>
-              )}
+              }
             </Button>
           </div>
         </form>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 }

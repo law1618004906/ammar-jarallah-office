@@ -3,132 +3,84 @@ async function addSampleData() {
   try {
     // Sample leaders data
     const sampleLeaders = [
-    {
-      full_name: 'أحمد محمد علي',
-      residence: 'بغداد - الكرادة',
-      phone: '07701234567',
-      workplace: 'شركة النفط',
-      center_info: 'مركز الكرادة الانتخابي',
-      station_number: '101',
-      votes_count: 250
-    },
-    {
-      full_name: 'فاطمة حسن كريم',
-      residence: 'بغداد - المنصور',
-      phone: '07712345678',
-      workplace: 'وزارة التربية',
-      center_info: 'مركز المنصور الانتخابي',
-      station_number: '102',
-      votes_count: 180
-    },
-    {
-      full_name: 'محمد عبد الله حسين',
-      residence: 'البصرة - الزبير',
-      phone: '07723456789',
-      workplace: 'ميناء البصرة',
-      center_info: 'مركز الزبير الانتخابي',
-      station_number: '201',
-      votes_count: 320
-    },
-    {
-      full_name: 'زينب صالح أحمد',
-      residence: 'الموصل - الجامعة',
-      phone: '07734567890',
-      workplace: 'جامعة الموصل',
-      center_info: 'مركز الجامعة الانتخابي',
-      station_number: '301',
-      votes_count: 195
-    },
-    {
-      full_name: 'عمار جاسم محمد',
-      residence: 'النجف - المدينة',
-      phone: '07745678901',
-      workplace: 'دائرة الصحة',
-      center_info: 'مركز النجف الانتخابي',
-      station_number: '401',
-      votes_count: 275
-    }];
-
+      {
+        full_name: 'احمد محمد علي',
+        residence: 'بغداد - الكرادة',
+        phone: '07901234567',
+        workplace: 'وزارة التربية',
+        center_info: 'مدرسة الرافدين الابتدائية',
+        station_number: '101',
+        votes_count: 150
+      },
+      {
+        full_name: 'فاطمة حسن جعفر',
+        residence: 'بغداد - الجادرية',
+        phone: '07801234567',
+        workplace: 'جامعة بغداد',
+        center_info: 'كلية الهندسة',
+        station_number: '102',
+        votes_count: 200
+      },
+      {
+        full_name: 'محمد كريم صالح',
+        residence: 'البصرة - شط العرب',
+        phone: '07701234567',
+        workplace: 'شركة نفط البصرة',
+        center_info: 'مدرسة الخليج المتوسطة',
+        station_number: '201',
+        votes_count: 180
+      }
+    ];
 
     // Sample persons data
     const samplePersons = [
-    {
-      leader_name: 'أحمد محمد علي',
-      full_name: 'سارة أحمد محمد',
-      residence: 'بغداد - الكرادة',
-      phone: '07701234568',
-      workplace: 'جامعة بغداد',
-      center_info: 'مركز الكرادة الانتخابي',
-      station_number: '101',
-      votes_count: 45
-    },
-    {
-      leader_name: 'أحمد محمد علي',
-      full_name: 'حسام علي أحمد',
-      residence: 'بغداد - الكرادة',
-      phone: '07701234569',
-      workplace: 'شركة الكهرباء',
-      center_info: 'مركز الكرادة الانتخابي',
-      station_number: '101',
-      votes_count: 38
-    },
-    {
-      leader_name: 'فاطمة حسن كريم',
-      full_name: 'علي حسن محمود',
-      residence: 'بغداد - المنصور',
-      phone: '07712345679',
-      workplace: 'شركة الاتصالات',
-      center_info: 'مركز المنصور الانتخابي',
-      station_number: '102',
-      votes_count: 28
-    },
-    {
-      leader_name: 'فاطمة حسن كريم',
-      full_name: 'نور فاطمة حسن',
-      residence: 'بغداد - المنصور',
-      phone: '07712345680',
-      workplace: 'مستشفى اليرموك',
-      center_info: 'مركز المنصور الانتخابي',
-      station_number: '102',
-      votes_count: 42
-    },
-    {
-      leader_name: 'محمد عبد الله حسين',
-      full_name: 'أسماء محمد عبد الله',
-      residence: 'البصرة - الزبير',
-      phone: '07723456790',
-      workplace: 'شركة البتروكيماويات',
-      center_info: 'مركز الزبير الانتخابي',
-      station_number: '201',
-      votes_count: 55
-    },
-    {
-      leader_name: 'زينب صالح أحمد',
-      full_name: 'يوسف زينب صالح',
-      residence: 'الموصل - الجامعة',
-      phone: '07734567891',
-      workplace: 'شركة الإعمار',
-      center_info: 'مركز الجامعة الانتخابي',
-      station_number: '301',
-      votes_count: 33
-    },
-    {
-      leader_name: 'عمار جاسم محمد',
-      full_name: 'ليلى عمار جاسم',
-      residence: 'النجف - المدينة',
-      phone: '07745678902',
-      workplace: 'دائرة التربية',
-      center_info: 'مركز النجف الانتخابي',
-      station_number: '401',
-      votes_count: 48
-    }];
-
+      {
+        leader_name: 'احمد محمد علي',
+        full_name: 'سارة احمد محمد',
+        residence: 'بغداد - الكرادة',
+        phone: '07901234568',
+        workplace: 'مستشفى بغداد',
+        center_info: 'مدرسة الرافدين الابتدائية',
+        station_number: '101',
+        votes_count: 5
+      },
+      {
+        leader_name: 'احمد محمد علي',
+        full_name: 'عمر عبدالله حسن',
+        residence: 'بغداد - الكرادة الشرقية',
+        phone: '07901234569',
+        workplace: 'بنك بغداد',
+        center_info: 'مدرسة الرافدين الابتدائية',
+        station_number: '101',
+        votes_count: 3
+      },
+      {
+        leader_name: 'فاطمة حسن جعفر',
+        full_name: 'زينب محمود علي',
+        residence: 'بغداد - الجادرية',
+        phone: '07801234568',
+        workplace: 'كلية الطب',
+        center_info: 'كلية الهندسة',
+        station_number: '102',
+        votes_count: 7
+      },
+      {
+        leader_name: 'محمد كريم صالح',
+        full_name: 'يوسف حسين عبدالله',
+        residence: 'البصرة - شط العرب',
+        phone: '07701234568',
+        workplace: 'مصفى البصرة',
+        center_info: 'مدرسة الخليج المتوسطة',
+        station_number: '201',
+        votes_count: 4
+      }
+    ];
 
     // Add leaders
     for (const leader of sampleLeaders) {
       const { error } = await ezsite.api.tableCreate(34596, leader);
       if (error) {
-        console.error('Error adding leader:', error);
+        console.error(`خطأ في إضافة القائد ${leader.full_name}:`, error);
       }
     }
 
@@ -136,13 +88,15 @@ async function addSampleData() {
     for (const person of samplePersons) {
       const { error } = await ezsite.api.tableCreate(34597, person);
       if (error) {
-        console.error('Error adding person:', error);
+        console.error(`خطأ في إضافة الفرد ${person.full_name}:`, error);
       }
     }
 
     return {
       success: true,
-      message: `تم إضافة ${sampleLeaders.length} قائد و ${samplePersons.length} فرد بنجاح`
+      message: 'تم إضافة البيانات التجريبية بنجاح',
+      leadersAdded: sampleLeaders.length,
+      personsAdded: samplePersons.length
     };
 
   } catch (error) {

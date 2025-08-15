@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import { AuthProvider } from "./hooks/useAuth";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -41,7 +42,9 @@ const App = () =>
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
-          <AppContent />
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
