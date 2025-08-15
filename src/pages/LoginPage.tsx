@@ -35,10 +35,7 @@ export default function LoginPage() {
     }
   };
 
-  // بيانات تسجيل الدخول التجريبية
-  const testAccounts = [
-  { username: 'فقار', password: '123456', role: 'مدير عام' },
-  { username: 'admin', password: 'admin123', role: 'مشرف' }];
+  // ملاحظة: تمت إزالة الحسابات التجريبية لأسباب أمنية
 
 
   return (
@@ -113,38 +110,11 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* حسابات تجريبية للاختبار */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-3 text-center">حسابات تجريبية:</h4>
-              <div className="space-y-2">
-                {testAccounts.map((account, index) =>
-                <div key={index} className="flex items-center justify-between text-sm bg-white p-2 rounded">
-                    <div>
-                      <span className="font-medium">{account.username}</span>
-                      <span className="text-gray-500 mr-2">({account.role})</span>
-                    </div>
-                    <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setUsername(account.username);
-                      setPassword(account.password);
-                    }}>
-
-                      استخدام
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* تمت إزالة الحسابات التجريبية */}
           </CardContent>
         </Card>
 
-        {/* معلومات إضافية */}
-        <div className="mt-4 text-center text-sm text-gray-500">
-          <p>للدخول السريع استخدم: فقار / 123456</p>
-        </div>
+        {/* تمت إزالة التلميحات التي تعرض بيانات اعتماد */}
       </div>
     </div>);
 
