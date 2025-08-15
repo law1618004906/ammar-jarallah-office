@@ -73,8 +73,8 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!stats) {
@@ -88,8 +88,8 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -170,8 +170,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.topLeaders.map((leader, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                {stats.topLeaders.map((leader, index) =>
+                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full">
                         <span className="text-purple-600 font-bold">{index + 1}</span>
@@ -187,7 +187,7 @@ export default function Dashboard() {
                       {leader.totalVotes} صوت
                     </Badge>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -205,8 +205,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg">
+                {stats.recentActivity.map((activity, index) =>
+                <div key={index} className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg">
                     <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
                       <BarChart3 size={16} className="text-blue-600" />
                     </div>
@@ -215,7 +215,7 @@ export default function Dashboard() {
                       <div className="text-xs text-gray-500 mt-1">{activity.timestamp}</div>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -232,35 +232,35 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="h-16 flex flex-col items-center gap-2"
-                  onClick={fetchDashboardStats}
-                >
+                  onClick={fetchDashboardStats}>
+
                   <BarChart3 size={20} />
                   <span className="text-sm">تحديث الإحصائيات</span>
                 </Button>
                 
-                <Button 
-                  variant="outline" 
-                  className="h-16 flex flex-col items-center gap-2"
-                >
+                <Button
+                  variant="outline"
+                  className="h-16 flex flex-col items-center gap-2">
+
                   <Users size={20} />
                   <span className="text-sm">تقرير شامل</span>
                 </Button>
                 
-                <Button 
-                  variant="outline" 
-                  className="h-16 flex flex-col items-center gap-2"
-                >
+                <Button
+                  variant="outline"
+                  className="h-16 flex flex-col items-center gap-2">
+
                   <Phone size={20} />
                   <span className="text-sm">قائمة الاتصال</span>
                 </Button>
                 
-                <Button 
-                  variant="outline" 
-                  className="h-16 flex flex-col items-center gap-2"
-                >
+                <Button
+                  variant="outline"
+                  className="h-16 flex flex-col items-center gap-2">
+
                   <Calendar size={20} />
                   <span className="text-sm">تقرير شهري</span>
                 </Button>
@@ -269,6 +269,6 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

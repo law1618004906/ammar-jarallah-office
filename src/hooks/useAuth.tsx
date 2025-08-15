@@ -18,7 +18,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: {children: ReactNode;}) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         param: []
       });
 
-      if (error || !data?.user) {
+      if (error || !data?.authenticated) {
         setUser(null);
       } else {
         setUser(data.user);
@@ -63,11 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      if (data?.user) {
+      if (data?.success && data?.user) {
         setUser(data.user);
         toast({
           title: "مرحباً بك",
-          description: `أهلاً وسهلاً ${data.user.name || data.user.username}`,
+          description: `أهلاً وسهلاً ${data.user.name || data.user.username}`
         });
         return true;
       }
@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       toast({
         title: "تم تسجيل الخروج",
-        description: "إلى اللقاء!",
+        description: "إلى اللقاء!"
       });
     }
   };
@@ -104,8 +104,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
-    </AuthContext.Provider>
-  );
+    </AuthContext.Provider>);
+
 }
 
 export const useAuth = () => {

@@ -47,12 +47,18 @@ export default function LeadersManagement() {
         return;
       }
 
-      setLeaders(data || []);
+      const leadersList = data?.List || [];
+      setLeaders(leadersList);
+      setFilteredLeaders(leadersList);
+      toast({
+        title: "تم تحميل البيانات",
+        description: `تم جلب ${leadersList.length} قائد`
+      });
     } catch (error) {
       console.error('خطأ في تحميل القادة:', error);
       toast({
         title: "خطأ في التحميل",
-        description: "حدث خطأ أثناء تحميل بيانات القادة",
+        description: "حدث خطأ أثناء تحميل البيانات",
         variant: "destructive"
       });
     } finally {
@@ -61,15 +67,15 @@ export default function LeadersManagement() {
   };
 
   // تصفية القادة حسب البحث
-  const filteredLeaders = leaders.filter(leader =>
-    leader.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    leader.phone.includes(searchTerm) ||
-    leader.residence.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    leader.workplace.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLeaders = leaders.filter((leader) =>
+  leader.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  leader.phone.includes(searchTerm) ||
+  leader.residence.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  leader.workplace.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const LeaderCard = ({ leader }: { leader: Leader }) => (
-    <Card className="shadow-lg hover:shadow-xl transition-all duration-200">
+  const LeaderCard = ({ leader }: {leader: Leader;}) =>
+  <Card className="shadow-lg hover:shadow-xl transition-all duration-200">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -90,33 +96,33 @@ export default function LeadersManagement() {
       
       <CardContent>
         <div className="space-y-3">
-          {leader.phone && (
-            <div className="flex items-center gap-3 text-gray-600">
+          {leader.phone &&
+        <div className="flex items-center gap-3 text-gray-600">
               <Phone size={16} />
               <span dir="ltr" className="font-mono">{leader.phone}</span>
             </div>
-          )}
+        }
           
-          {leader.residence && (
-            <div className="flex items-center gap-3 text-gray-600">
+          {leader.residence &&
+        <div className="flex items-center gap-3 text-gray-600">
               <MapPin size={16} />
               <span>{leader.residence}</span>
             </div>
-          )}
+        }
           
-          {leader.workplace && (
-            <div className="flex items-center gap-3 text-gray-600">
+          {leader.workplace &&
+        <div className="flex items-center gap-3 text-gray-600">
               <Briefcase size={16} />
               <span>{leader.workplace}</span>
             </div>
-          )}
+        }
           
-          {leader.center_info && (
-            <div className="flex items-center gap-3 text-gray-600">
+          {leader.center_info &&
+        <div className="flex items-center gap-3 text-gray-600">
               <Users size={16} />
               <span>{leader.center_info}</span>
             </div>
-          )}
+        }
         </div>
 
         <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-200">
@@ -130,8 +136,8 @@ export default function LeadersManagement() {
           </Button>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
+
 
   if (loading) {
     return (
@@ -144,8 +150,8 @@ export default function LeadersManagement() {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -173,8 +179,8 @@ export default function LeadersManagement() {
                       placeholder="البحث في القادة (الاسم، الهاتف، السكن، العمل...)"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pr-10 rtl-input"
-                    />
+                      className="pr-10 rtl-input" />
+
                   </div>
                 </div>
                 
@@ -217,8 +223,8 @@ export default function LeadersManagement() {
         </div>
 
         {/* قائمة القادة */}
-        {filteredLeaders.length === 0 ? (
-          <div className="text-center py-12">
+        {filteredLeaders.length === 0 ?
+        <div className="text-center py-12">
             <Crown className="mx-auto text-gray-400 mb-4" size={64} />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">
               {searchTerm ? 'لا توجد نتائج للبحث' : 'لا توجد قادة مسجلون'}
@@ -226,25 +232,25 @@ export default function LeadersManagement() {
             <p className="text-gray-500">
               {searchTerm ? 'جرب تغيير كلمات البحث' : 'ابدأ بإضافة قائد جديد'}
             </p>
+          </div> :
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredLeaders.map((leader) =>
+          <LeaderCard key={leader.id} leader={leader} />
+          )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredLeaders.map((leader) => (
-              <LeaderCard key={leader.id} leader={leader} />
-            ))}
-          </div>
-        )}
+        }
 
         {/* معلومات إضافية */}
-        {searchTerm && filteredLeaders.length > 0 && (
-          <div className="mt-8 text-center">
+        {searchTerm && filteredLeaders.length > 0 &&
+        <div className="mt-8 text-center">
             <p className="text-gray-600">
               تم العثور على <span className="font-bold text-purple-600">{filteredLeaders.length}</span> قائد
               من أصل <span className="font-bold">{leaders.length}</span>
             </p>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }

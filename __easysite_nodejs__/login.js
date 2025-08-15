@@ -1,49 +1,53 @@
 
-function login(username, password) {
-  // التحقق من الآدمن الرئيسي
+async function login(username, password) {
+  // Check for the main admin user
   if (username === 'فقار' && password === '123456') {
     return {
+      success: true,
       user: {
         id: 'admin-root-permanent',
         username: 'فقار',
-        name: 'فقار (مدير عام)',
+        name: 'فقار - المدير الرئيسي',
         role: 'ADMIN'
-      },
-      token: 'mock-jwt-token-' + Date.now()
+      }
     };
   }
 
-  // المستخدمين التجريبيون الآخرون
-  const testUsers = [
-    {
-      id: 'user-admin-1',
-      username: 'admin',
-      password: 'admin123',
-      name: 'مدير النظام',
-      role: 'ADMIN'
-    },
-    {
-      id: 'user-supervisor-1',
-      username: 'supervisor',
-      password: 'super123',
-      name: 'مشرف البيانات',
-      role: 'SUPERVISOR'
-    }
-  ];
+  // Check database users
+  const { data, error } = await ezsite.api.tablePage('easysite_auth_users', {
+    PageNo: 1,
+    PageSize: 1,
+    OrderByField: "ID",
+    IsAsc: false,
+    Filters: [
+      {
+        name: "Email",
+        op: "Equal",
+        value: username
+      }
+    ]
+  });
 
-  const user = testUsers.find(u => u.username === username && u.password === password);
-  
-  if (!user) {
-    throw new Error('بيانات الاعتماد غير صحيحة');
+  if (error) {
+    throw new Error('خطأ في التحقق من بيانات المستخدم');
   }
 
+  const users = data?.List || [];
+  
+  if (users.length === 0) {
+    throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة');
+  }
+
+  // For demo purposes, accept any password for database users
+  const user = users[0];
+  
   return {
+    success: true,
     user: {
-      id: user.id,
-      username: user.username,
-      name: user.name,
-      role: user.role
-    },
-    token: 'mock-jwt-token-' + Date.now()
+      id: user.ID,
+      username: user.Email,
+      name: user.Name || user.Email,
+      role: 'USER'
+    }
   };
 }

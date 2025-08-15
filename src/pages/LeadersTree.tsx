@@ -63,23 +63,27 @@ export default function LeadersTree() {
         return;
       }
 
-      setTree(data.tree || []);
-      setStats(data.stats || {
+      setTree(data?.tree || []);
+      setStats(data?.stats || {
         totalLeaders: 0,
         totalPersons: 0,
         totalVotes: 0,
         avgVotesPerLeader: 0
       });
-      
+
       // توسيع جميع القادة بشكل افتراضي
-      const leaderIds = data.tree?.filter((node: TreeNode) => node.type === 'leader').map((node: TreeNode) => node.id) || [];
+      const leaderIds = data?.tree?.filter((node: TreeNode) => node.type === 'leader').map((node: TreeNode) => node.id) || [];
       setExpandedNodes(new Set(leaderIds));
-      
+
+      toast({
+        title: "تم تحميل البيانات",
+        description: `تم جلب ${data?.tree?.length || 0} قائد بنجاح`
+      });
     } catch (error) {
-      console.error('خطأ في تحميل البيانات:', error);
+      console.error('خطأ في تحميل الشجرة:', error);
       toast({
         title: "خطأ في التحميل",
-        description: "حدث خطأ أثناء تحميل بيانات الشجرة",
+        description: "حدث خطأ أثناء تحميل البيانات",
         variant: "destructive"
       });
     } finally {
@@ -97,7 +101,7 @@ export default function LeadersTree() {
     setExpandedNodes(newExpanded);
   };
 
-  const TreeNodeView = ({ node, level = 0 }: { node: TreeNode; level?: number }) => {
+  const TreeNodeView = ({ node, level = 0 }: {node: TreeNode;level?: number;}) => {
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = node.children.length > 0;
     const isSelected = selectedNode?.id === node.id;
@@ -106,23 +110,23 @@ export default function LeadersTree() {
       <div className="tree-node">
         <div
           className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all duration-300 ${
-            isSelected
-              ? 'bg-purple-100 border-2 border-purple-400 tree-node selected shadow-lg'
-              : 'hover:bg-purple-50 border border-gray-200 hover:border-purple-200 interactive-hover'
-          }`}
+          isSelected ?
+          'bg-purple-100 border-2 border-purple-400 tree-node selected shadow-lg' :
+          'hover:bg-purple-50 border border-gray-200 hover:border-purple-200 interactive-hover'}`
+          }
           style={{ marginRight: `${level * 24}px` }}
           onClick={() => {
             setSelectedNode(node);
             if (hasChildren) {
               toggleNode(node.id);
             }
-          }}
-        >
-          {hasChildren && (
-            <div className="text-purple-600 transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+          }}>
+
+          {hasChildren &&
+          <div className="text-purple-600 transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>
               <ChevronRight size={18} />
             </div>
-          )}
+          }
           
           <div className={node.type === 'leader' ? 'crown-icon' : 'user-icon'}>
             {node.type === 'leader' ? <Crown size={22} /> : <User size={20} />}
@@ -137,18 +141,18 @@ export default function LeadersTree() {
           </div>
         </div>
 
-        {isExpanded && hasChildren && (
-          <div className="mt-2 relative">
+        {isExpanded && hasChildren &&
+        <div className="mt-2 relative">
             <div className="tree-connector"></div>
-            {node.children.map((child) => (
-              <div key={child.id} className="mb-2">
+            {node.children.map((child) =>
+          <div key={child.id} className="mb-2">
                 <TreeNodeView node={child} level={level + 1} />
               </div>
-            ))}
+          )}
           </div>
-        )}
-      </div>
-    );
+        }
+      </div>);
+
   };
 
   const NodeDetailsView = () => {
@@ -162,8 +166,8 @@ export default function LeadersTree() {
             <CardTitle className="text-xl">اختر عنصراً من الشجرة</CardTitle>
             <CardDescription>انقر على أي قائد أو فرد لعرض تفاصيله الكاملة</CardDescription>
           </CardHeader>
-        </Card>
-      );
+        </Card>);
+
     }
 
     return (
@@ -171,11 +175,11 @@ export default function LeadersTree() {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${selectedNode.type === 'leader' ? 'bg-yellow-100' : 'bg-blue-100'}`}>
-              {selectedNode.type === 'leader' ? (
-                <Crown className="text-yellow-600" size={24} />
-              ) : (
-                <User className="text-blue-600" size={24} />
-              )}
+              {selectedNode.type === 'leader' ?
+              <Crown className="text-yellow-600" size={24} /> :
+
+              <User className="text-blue-600" size={24} />
+              }
             </div>
             <div>
               <CardTitle className="text-xl">
@@ -186,45 +190,45 @@ export default function LeadersTree() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {selectedNode.details.phone && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          {selectedNode.details.phone &&
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <Phone className="text-green-600" size={20} />
               <div>
                 <div className="font-medium text-gray-700">الهاتف</div>
                 <div className="text-gray-900">{selectedNode.details.phone}</div>
               </div>
             </div>
-          )}
+          }
           
-          {selectedNode.details.address && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          {selectedNode.details.address &&
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <MapPin className="text-red-600" size={20} />
               <div>
                 <div className="font-medium text-gray-700">السكن</div>
                 <div className="text-gray-900">{selectedNode.details.address}</div>
               </div>
             </div>
-          )}
+          }
           
-          {selectedNode.details.work && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          {selectedNode.details.work &&
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <Briefcase className="text-blue-600" size={20} />
               <div>
                 <div className="font-medium text-gray-700">العمل</div>
                 <div className="text-gray-900">{selectedNode.details.work}</div>
               </div>
             </div>
-          )}
+          }
           
-          {selectedNode.details.votingCenter && (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          {selectedNode.details.votingCenter &&
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <Home className="text-purple-600" size={20} />
               <div>
                 <div className="font-medium text-gray-700">المركز الانتخابي</div>
                 <div className="text-gray-900">{selectedNode.details.votingCenter}</div>
               </div>
             </div>
-          )}
+          }
 
           <Separator />
           
@@ -236,22 +240,22 @@ export default function LeadersTree() {
             <div className="text-3xl font-bold text-purple-800">{selectedNode.totalVotes}</div>
           </div>
 
-          {selectedNode.type === 'leader' && selectedNode.children.length > 0 && (
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+          {selectedNode.type === 'leader' && selectedNode.children.length > 0 &&
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="text-blue-600" size={20} />
                 <span className="font-semibold text-blue-700">عدد الأفراد</span>
               </div>
               <div className="text-2xl font-bold text-blue-800">{selectedNode.children.length}</div>
             </div>
-          )}
+          }
         </CardContent>
-      </Card>
-    );
+      </Card>);
+
   };
 
-  const StatsView = () => (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  const StatsView = () =>
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
@@ -299,8 +303,8 @@ export default function LeadersTree() {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
+
 
   if (loading) {
     return (
@@ -313,8 +317,8 @@ export default function LeadersTree() {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -350,23 +354,23 @@ export default function LeadersTree() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 max-h-[700px] overflow-y-auto custom-scrollbar">
-                  {tree.length === 0 ? (
-                    <div className="text-center py-12">
+                  {tree.length === 0 ?
+                  <div className="text-center py-12">
                       <Users className="mx-auto text-gray-400 mb-4" size={48} />
                       <p className="text-gray-500 text-lg">لا توجد بيانات متاحة</p>
-                      <Button 
-                        variant="outline" 
-                        onClick={fetchTreeData}
-                        className="mt-4"
-                      >
+                      <Button
+                      variant="outline"
+                      onClick={fetchTreeData}
+                      className="mt-4">
+
                         إعادة تحميل
                       </Button>
-                    </div>
-                  ) : (
-                    tree.map((node) => (
-                      <TreeNodeView key={node.id} node={node} />
-                    ))
-                  )}
+                    </div> :
+
+                  tree.map((node) =>
+                  <TreeNodeView key={node.id} node={node} />
+                  )
+                  }
                 </div>
               </CardContent>
             </Card>
@@ -380,33 +384,33 @@ export default function LeadersTree() {
 
         {/* أزرار التحكم */}
         <div className="flex justify-center gap-4 mt-8">
-          <Button 
+          <Button
             onClick={fetchTreeData}
-            className="bg-purple-600 hover:bg-purple-700"
-          >
+            className="bg-purple-600 hover:bg-purple-700">
+
             إعادة تحميل البيانات
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => {
               const allNodeIds = tree.reduce((acc: string[], node) => {
                 acc.push(node.id);
-                node.children.forEach(child => acc.push(child.id));
+                node.children.forEach((child) => acc.push(child.id));
                 return acc;
               }, []);
               setExpandedNodes(new Set(allNodeIds));
-            }}
-          >
+            }}>
+
             توسيع الكل
           </Button>
-          <Button 
+          <Button
             variant="outline"
-            onClick={() => setExpandedNodes(new Set())}
-          >
+            onClick={() => setExpandedNodes(new Set())}>
+
             طي الكل
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

@@ -62,29 +62,29 @@ export default function HomePage() {
             {/* الأزرار */}
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-6 py-4 text-lg font-semibold"
-                  onClick={() => navigate('/leaders-tree')}
-                >
+                  onClick={() => navigate('/leaders-tree')}>
+
                   <Crown className="ml-2" size={20} />
                   العرض الشجري
                 </Button>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 px-6 py-4 text-lg font-semibold"
-                  onClick={() => navigate('/dashboard')}
-                >
+                  onClick={() => navigate('/dashboard')}>
+
                   <BarChart3 className="ml-2" size={20} />
                   لوحة التحكم
                 </Button>
               </div>
-              <Button 
+              <Button
                 variant="outline"
-                size="lg" 
+                size="lg"
                 className="px-8 py-3 text-lg font-semibold w-full md:w-auto"
-                onClick={() => navigate('/login')}
-              >
+                onClick={() => navigate('/login')}>
+
                 <LogIn className="ml-2" size={20} />
                 تسجيل الدخول
                 <ArrowRight className="mr-2" size={20} />
@@ -97,35 +97,35 @@ export default function HomePage() {
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-700 mb-3">روابط سريعة</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="flex flex-col items-center gap-2 h-auto py-4"
-                    onClick={() => navigate('/leaders')}
-                  >
+                    onClick={() => navigate('/leaders')}>
+
                     <Crown size={24} className="text-purple-600" />
                     <span className="text-sm">إدارة القادة</span>
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="flex flex-col items-center gap-2 h-auto py-4"
-                    onClick={() => navigate('/individuals')}
-                  >
+                    onClick={() => navigate('/individuals')}>
+
                     <Users size={24} className="text-blue-600" />
                     <span className="text-sm">إدارة الأفراد</span>
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="flex flex-col items-center gap-2 h-auto py-4"
-                    onClick={() => navigate('/dashboard')}
-                  >
+                    onClick={() => navigate('/dashboard')}>
+
                     <BarChart3 size={24} className="text-green-600" />
                     <span className="text-sm">الإحصائيات</span>
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="flex flex-col items-center gap-2 h-auto py-4"
-                    onClick={() => navigate('/leaders-tree')}
-                  >
+                    onClick={() => navigate('/leaders-tree')}>
+
                     <Vote size={24} className="text-orange-600" />
                     <span className="text-sm">العرض الشجري</span>
                   </Button>
@@ -153,6 +153,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

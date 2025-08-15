@@ -23,8 +23,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       // محاكاة تسجيل الدخول
-      if ((username === 'فقار' && password === '123456') || 
-          (username === 'admin' && password === 'admin123')) {
+      if (username === 'فقار' && password === '123456' ||
+      username === 'admin' && password === 'admin123') {
         navigate('/leaders-tree', { replace: true });
       } else {
         alert('بيانات الاعتماد غير صحيحة');
@@ -36,9 +36,9 @@ export default function LoginPage() {
 
   // بيانات تسجيل الدخول التجريبية
   const testAccounts = [
-    { username: 'فقار', password: '123456', role: 'مدير عام' },
-    { username: 'admin', password: 'admin123', role: 'مشرف' }
-  ];
+  { username: 'فقار', password: '123456', role: 'مدير عام' },
+  { username: 'admin', password: 'admin123', role: 'مشرف' }];
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4" dir="rtl">
@@ -67,8 +67,8 @@ export default function LoginPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   className="rtl-input"
                   placeholder="أدخل اسم المستخدم"
-                  required
-                />
+                  required />
+
               </div>
 
               <div>
@@ -84,13 +84,13 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="rtl-input pr-10"
                     placeholder="أدخل كلمة المرور"
-                    required
-                  />
+                    required />
+
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
@@ -99,16 +99,16 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg py-3"
-                disabled={loading || !username.trim() || !password.trim()}
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
+                disabled={loading || !username.trim() || !password.trim()}>
+
+                {loading ?
+                <div className="flex items-center gap-2">
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
                     جارٍ التحقق...
-                  </div>
-                ) : (
-                  'تسجيل الدخول'
-                )}
+                  </div> :
+
+                'تسجيل الدخول'
+                }
               </Button>
             </form>
 
@@ -116,25 +116,25 @@ export default function LoginPage() {
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h4 className="font-semibold text-gray-700 mb-3 text-center">حسابات تجريبية:</h4>
               <div className="space-y-2">
-                {testAccounts.map((account, index) => (
-                  <div key={index} className="flex items-center justify-between text-sm bg-white p-2 rounded">
+                {testAccounts.map((account, index) =>
+                <div key={index} className="flex items-center justify-between text-sm bg-white p-2 rounded">
                     <div>
                       <span className="font-medium">{account.username}</span>
                       <span className="text-gray-500 mr-2">({account.role})</span>
                     </div>
                     <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setUsername(account.username);
-                        setPassword(account.password);
-                      }}
-                    >
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setUsername(account.username);
+                      setPassword(account.password);
+                    }}>
+
                       استخدام
                     </Button>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </CardContent>
@@ -145,6 +145,6 @@ export default function LoginPage() {
           <p>للدخول السريع استخدم: فقار / 123456</p>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

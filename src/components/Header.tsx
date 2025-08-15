@@ -12,12 +12,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { icon: Home, label: 'الرئيسية', path: '/' },
-  { icon: TreePine, label: 'العرض الشجري', path: '/leaders-tree' },
-  { icon: BarChart3, label: 'لوحة التحكم', path: '/dashboard' },
-  { icon: Crown, label: 'القادة', path: '/leaders' },
-  { icon: Users, label: 'الأفراد', path: '/individuals' }
-];
+{ icon: Home, label: 'الرئيسية', path: '/' },
+{ icon: TreePine, label: 'العرض الشجري', path: '/leaders-tree' },
+{ icon: BarChart3, label: 'لوحة التحكم', path: '/dashboard' },
+{ icon: Crown, label: 'القادة', path: '/leaders' },
+{ icon: Users, label: 'الأفراد', path: '/individuals' }];
+
 
 export default function Header() {
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ export default function Header() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
-              
+
               return (
                 <Button
                   key={item.path}
@@ -51,15 +51,15 @@ export default function Header() {
                   size="sm"
                   onClick={() => navigate(item.path)}
                   className={`flex items-center gap-2 ${
-                    isActive 
-                      ? "bg-purple-600 hover:bg-purple-700 text-white" 
-                      : "text-gray-600 hover:text-purple-600 hover:bg-purple-50"
-                  }`}
-                >
+                  isActive ?
+                  "bg-purple-600 hover:bg-purple-700 text-white" :
+                  "text-gray-600 hover:text-purple-600 hover:bg-purple-50"}`
+                  }>
+
                   <Icon size={16} />
                   {item.label}
-                </Button>
-              );
+                </Button>);
+
             })}
           </nav>
 
@@ -69,8 +69,8 @@ export default function Header() {
               variant="outline"
               size="sm"
               onClick={() => navigate('/login')}
-              className="flex items-center gap-2"
-            >
+              className="flex items-center gap-2">
+
               <LogIn size={16} />
               <span className="hidden sm:inline">تسجيل الدخول</span>
             </Button>
@@ -83,7 +83,7 @@ export default function Header() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
-              
+
               return (
                 <Button
                   key={item.path}
@@ -91,19 +91,19 @@ export default function Header() {
                   size="sm"
                   onClick={() => navigate(item.path)}
                   className={`flex items-center gap-2 whitespace-nowrap ${
-                    isActive 
-                      ? "bg-purple-600 hover:bg-purple-700 text-white" 
-                      : "text-gray-600 hover:text-purple-600"
-                  }`}
-                >
+                  isActive ?
+                  "bg-purple-600 hover:bg-purple-700 text-white" :
+                  "text-gray-600 hover:text-purple-600"}`
+                  }>
+
                   <Icon size={14} />
                   <span className="text-xs">{item.label}</span>
-                </Button>
-              );
+                </Button>);
+
             })}
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 }

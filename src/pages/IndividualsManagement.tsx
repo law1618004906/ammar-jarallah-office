@@ -36,6 +36,7 @@ export default function IndividualsManagement() {
   const fetchPersons = async () => {
     try {
       setLoading(true);
+
       const { data, error } = await window.ezsite.apis.run({
         path: "getPersons",
         param: []
@@ -50,12 +51,18 @@ export default function IndividualsManagement() {
         return;
       }
 
-      setPersons(data || []);
+      const personsList = data?.List || [];
+      setPersons(personsList);
+      setFilteredPersons(personsList);
+      toast({
+        title: "تم تحميل البيانات",
+        description: `تم جلب ${personsList.length} فرد`
+      });
     } catch (error) {
       console.error('خطأ في تحميل الأفراد:', error);
       toast({
         title: "خطأ في التحميل",
-        description: "حدث خطأ أثناء تحميل بيانات الأفراد",
+        description: "حدث خطأ أثناء تحميل البيانات",
         variant: "destructive"
       });
     } finally {
@@ -64,23 +71,23 @@ export default function IndividualsManagement() {
   };
 
   // الحصول على قائمة القادة الفريدة
-  const uniqueLeaders = Array.from(new Set(persons.map(person => person.leader_name)));
+  const uniqueLeaders = Array.from(new Set(persons.map((person) => person.leader_name)));
 
   // تصفية الأفراد حسب البحث والقائد المختار
-  const filteredPersons = persons.filter(person => {
+  const filteredPersons = persons.filter((person) => {
     const matchesSearch = person.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         person.phone.includes(searchTerm) ||
-                         person.residence.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         person.workplace.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         person.leader_name.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    person.phone.includes(searchTerm) ||
+    person.residence.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.workplace.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.leader_name.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesLeader = !selectedLeader || person.leader_name === selectedLeader;
-    
+
     return matchesSearch && matchesLeader;
   });
 
-  const PersonCard = ({ person }: { person: Person }) => (
-    <Card className="shadow-lg hover:shadow-xl transition-all duration-200">
+  const PersonCard = ({ person }: {person: Person;}) =>
+  <Card className="shadow-lg hover:shadow-xl transition-all duration-200">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -104,32 +111,32 @@ export default function IndividualsManagement() {
       
       <CardContent>
         <div className="space-y-3">
-          {person.phone && (
-            <div className="flex items-center gap-3 text-gray-600">
+          {person.phone &&
+        <div className="flex items-center gap-3 text-gray-600">
               <Phone size={16} />
               <span dir="ltr" className="font-mono">{person.phone}</span>
             </div>
-          )}
+        }
           
-          {person.residence && (
-            <div className="flex items-center gap-3 text-gray-600">
+          {person.residence &&
+        <div className="flex items-center gap-3 text-gray-600">
               <MapPin size={16} />
               <span>{person.residence}</span>
             </div>
-          )}
+        }
           
-          {person.workplace && (
-            <div className="flex items-center gap-3 text-gray-600">
+          {person.workplace &&
+        <div className="flex items-center gap-3 text-gray-600">
               <Briefcase size={16} />
               <span>{person.workplace}</span>
             </div>
-          )}
+        }
           
-          {person.center_info && (
-            <div className="text-sm text-gray-500">
+          {person.center_info &&
+        <div className="text-sm text-gray-500">
               المركز: {person.center_info} - محطة {person.station_number}
             </div>
-          )}
+        }
         </div>
 
         <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-200">
@@ -143,8 +150,8 @@ export default function IndividualsManagement() {
           </Button>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
+
 
   if (loading) {
     return (
@@ -157,8 +164,8 @@ export default function IndividualsManagement() {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -187,8 +194,8 @@ export default function IndividualsManagement() {
                         placeholder="البحث في الأفراد (الاسم، الهاتف، القائد...)"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pr-10 rtl-input"
-                      />
+                        className="pr-10 rtl-input" />
+
                     </div>
                   </div>
                   
@@ -211,11 +218,11 @@ export default function IndividualsManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">جميع القادة</SelectItem>
-                      {uniqueLeaders.map((leader) => (
-                        <SelectItem key={leader} value={leader}>
+                      {uniqueLeaders.map((leader) =>
+                      <SelectItem key={leader} value={leader}>
                           {leader}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -247,8 +254,8 @@ export default function IndividualsManagement() {
         </div>
 
         {/* قائمة الأفراد */}
-        {filteredPersons.length === 0 ? (
-          <div className="text-center py-12">
+        {filteredPersons.length === 0 ?
+        <div className="text-center py-12">
             <Users className="mx-auto text-gray-400 mb-4" size={64} />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">
               {searchTerm || selectedLeader ? 'لا توجد نتائج للبحث' : 'لا توجد أفراد مسجلون'}
@@ -256,30 +263,30 @@ export default function IndividualsManagement() {
             <p className="text-gray-500">
               {searchTerm || selectedLeader ? 'جرب تغيير معايير البحث' : 'ابدأ بإضافة فرد جديد'}
             </p>
+          </div> :
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPersons.map((person) =>
+          <PersonCard key={person.id} person={person} />
+          )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPersons.map((person) => (
-              <PersonCard key={person.id} person={person} />
-            ))}
-          </div>
-        )}
+        }
 
         {/* معلومات إضافية */}
-        {(searchTerm || selectedLeader) && filteredPersons.length > 0 && (
-          <div className="mt-8 text-center">
+        {(searchTerm || selectedLeader) && filteredPersons.length > 0 &&
+        <div className="mt-8 text-center">
             <p className="text-gray-600">
               تم العثور على <span className="font-bold text-blue-600">{filteredPersons.length}</span> فرد
               من أصل <span className="font-bold">{persons.length}</span>
-              {selectedLeader && (
-                <>
+              {selectedLeader &&
+            <>
                   {" "}للقائد <span className="font-bold text-purple-600">{selectedLeader}</span>
                 </>
-              )}
+            }
             </p>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
