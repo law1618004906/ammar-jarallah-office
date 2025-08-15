@@ -1,7 +1,6 @@
-
-async function addLeader(leaderData) {
+async function updateLeader(leaderData) {
   try {
-    const { data, error } = await ezsite.api.tableCreate('election_people', {
+    const { data, error } = await ezsite.api.tableUpdate('election_people', leaderData.id, {
       full_name: leaderData.full_name || '',
       person_type: 'LEADER',
       residence: leaderData.residence || '',
@@ -10,25 +9,23 @@ async function addLeader(leaderData) {
       center_info: leaderData.center_info || '',
       station_number: leaderData.station_number || '',
       votes_count: leaderData.votes_count || 0,
-      leader_id: null,
-      created_by: 'admin',
-      status: 'ACTIVE'
+      updated_at: new Date().toISOString()
     });
 
     if (error) {
-      throw new Error(`خطأ في إضافة القائد: ${error}`);
+      throw new Error(`خطأ في تعديل بيانات القائد: ${error}`);
     }
 
     // Log the operation to audit table
     await ezsite.api.tableCreate('election_audit', {
-      operation: 'CREATE',
+      operation: 'UPDATE',
       table_name: 'election_people',
-      record_id: data?.ID || 0,
+      record_id: leaderData.id,
       user_id: 'admin',
-      old_values: null,
+      old_values: JSON.stringify({ action: 'update_leader' }),
       new_values: JSON.stringify({
-        action: 'create_leader',
-        leader_name: leaderData.full_name
+        leader_name: leaderData.full_name,
+        votes_count: leaderData.votes_count
       }),
       timestamp: new Date().toISOString(),
       ip_address: '127.0.0.1'
@@ -36,7 +33,7 @@ async function addLeader(leaderData) {
 
     return data;
   } catch (error) {
-    console.error('Add leader error:', error);
+    console.error('Update leader error:', error);
     throw error;
   }
 }

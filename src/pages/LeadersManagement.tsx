@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import AddLeaderModal from '@/components/AddLeaderModal';
+import EditLeaderModal from '@/components/EditLeaderModal';
 import AddSampleDataButton from '@/components/AddSampleDataButton';
 
 interface Leader {
@@ -75,6 +77,38 @@ export default function LeadersManagement() {
   leader.workplace.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleDeleteLeader = async (leaderId: number, leaderName: string) => {
+    try {
+      const { data, error } = await window.ezsite.apis.run({
+        path: "deleteLeader",
+        param: [leaderId]
+      });
+
+      if (error) {
+        toast({
+          title: "خطأ في حذف القائد",
+          description: error,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "تم الحذف بنجاح",
+        description: `تم حذف القائد ${leaderName} بنجاح`
+      });
+
+      fetchLeaders();
+    } catch (error) {
+      console.error('خطأ في حذف القائد:', error);
+      toast({
+        title: "خطأ في الحذف",
+        description: "حدث خطأ أثناء حذف القائد",
+        variant: "destructive"
+      });
+    }
+  };
+
   const LeaderCard = ({ leader }: {leader: Leader;}) =>
   <Card className="formal-card interactive-hover formal-shadow">
       <CardHeader className="pb-4">
@@ -127,14 +161,31 @@ export default function LeadersManagement() {
       }
 
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
-          <Button variant="outline" size="sm" className="formal-shadow border-blue-200 hover:border-blue-400 hover:bg-blue-50">
-            <Edit2 size={16} className="ml-2" />
-            تعديل
-          </Button>
-          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-400 hover:bg-red-50">
-            <Trash2 size={16} className="ml-2" />
-            حذف
-          </Button>
+          <EditLeaderModal leader={leader} onLeaderUpdated={fetchLeaders} />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-400 hover:bg-red-50">
+                <Trash2 size={16} className="ml-2" />
+                حذف
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent dir="rtl">
+              <AlertDialogHeader>
+                <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+                <AlertDialogDescription>
+                  هل أنت متأكد من أنك تريد حذف القائد <span className="font-bold">{leader.full_name}</span>؟
+                  <br />
+                  لا يمكن التراجع عن هذا الإجراء.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleDeleteLeader(leader.id, leader.full_name)} className="bg-red-600 hover:bg-red-700">
+                  حذف
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardContent>
     </Card>;

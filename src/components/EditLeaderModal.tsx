@@ -1,18 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Crown } from 'lucide-react';
+import { Crown, Edit2, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
-interface PersonFormData {
-  leader_name: string;
+interface LeaderFormData {
+  id: number;
   full_name: string;
-  person_type: 'INDIVIDUAL';
+  person_type: 'LEADER';
   residence: string;
   phone: string;
   workplace: string;
@@ -21,63 +19,38 @@ interface PersonFormData {
   votes_count: number;
 }
 
-interface Leader {
-  id: number;
-  full_name: string;
+interface EditLeaderModalProps {
+  leader: {
+    id: number;
+    full_name: string;
+    residence: string;
+    phone: string;
+    workplace: string;
+    center_info: string;
+    station_number: string;
+    votes_count: number;
+  };
+  onLeaderUpdated: () => void;
 }
 
-interface AddPersonModalProps {
-  onPersonAdded: () => void;
-}
-
-export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
+export default function EditLeaderModal({ leader, onLeaderUpdated }: EditLeaderModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [leaders, setLeaders] = useState<Leader[]>([]);
-  const [formData, setFormData] = useState<PersonFormData>({
-    leader_name: '',
-    full_name: '',
-    person_type: 'INDIVIDUAL',
-    residence: '',
-    phone: '',
-    workplace: '',
-    center_info: '',
-    station_number: '',
-    votes_count: 0
+  const [formData, setFormData] = useState<LeaderFormData>({
+    id: leader.id,
+    full_name: leader.full_name,
+    person_type: 'LEADER',
+    residence: leader.residence,
+    phone: leader.phone,
+    workplace: leader.workplace,
+    center_info: leader.center_info,
+    station_number: leader.station_number,
+    votes_count: leader.votes_count
   });
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchLeaders();
-    }
-  }, [isOpen]);
-
-  const fetchLeaders = async () => {
-    try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "getLeaders",
-        param: []
-      });
-
-      if (error) {
-        toast({
-          title: "خطأ في تحميل القادة",
-          description: error,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const leadersList = data?.List || [];
-      setLeaders(leadersList);
-    } catch (error) {
-      console.error('خطأ في تحميل القادة:', error);
-    }
-  };
-
-  const handleInputChange = (field: keyof PersonFormData, value: string | number) => {
+  const handleInputChange = (field: keyof LeaderFormData, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value
@@ -89,15 +62,6 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
       toast({
         title: "خطأ في التحقق",
         description: "الاسم الثلاثي مطلوب",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!formData.leader_name.trim()) {
-      toast({
-        title: "خطأ في التحقق",
-        description: "يجب اختيار القائد المسؤول",
         variant: "destructive"
       });
       return false;
@@ -125,13 +89,13 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
     setIsLoading(true);
     try {
       const { data, error } = await window.ezsite.apis.run({
-        path: "addPerson",
+        path: "updateLeader",
         param: [formData]
       });
 
       if (error) {
         toast({
-          title: "خطأ في إضافة الفرد",
+          title: "خطأ في تعديل القائد",
           description: error,
           variant: "destructive"
         });
@@ -139,30 +103,17 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
       }
 
       toast({
-        title: "تمت الإضافة بنجاح",
-        description: "تم إضافة الفرد الجديد بنجاح"
-      });
-
-      // Reset form
-      setFormData({
-        leader_name: '',
-        full_name: '',
-        person_type: 'INDIVIDUAL',
-        residence: '',
-        phone: '',
-        workplace: '',
-        center_info: '',
-        station_number: '',
-        votes_count: 0
+        title: "تم التعديل بنجاح",
+        description: "تم تعديل بيانات القائد بنجاح"
       });
 
       setIsOpen(false);
-      onPersonAdded();
+      onLeaderUpdated();
     } catch (error) {
-      console.error('خطأ في إضافة الفرد:', error);
+      console.error('خطأ في تعديل القائد:', error);
       toast({
-        title: "خطأ في الإضافة",
-        description: "حدث خطأ أثناء إضافة الفرد",
+        title: "خطأ في التعديل",
+        description: "حدث خطأ أثناء تعديل بيانات القائد",
         variant: "destructive"
       });
     } finally {
@@ -173,48 +124,26 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="btn-formal h-12 px-6 text-lg font-semibold">
-          <Plus size={20} className="ml-2" />
-          إضافة فرد جديد
+        <Button variant="outline" size="sm" className="formal-shadow border-blue-200 hover:border-blue-400 hover:bg-blue-50">
+          <Edit2 size={16} className="ml-2" />
+          تعديل
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-3 bg-blue-100 rounded-xl">
-              <Users className="text-blue-600" size={24} />
+            <div className="p-3 bg-yellow-100 rounded-xl">
+              <Edit2 className="text-yellow-600" size={24} />
             </div>
-            إضافة فرد جديد
+            تعديل بيانات القائد
           </DialogTitle>
           <DialogDescription className="text-lg formal-subtitle">
-            أدخل بيانات الفرد الجديد وحدد القائد المسؤول عنه
+            عدل بيانات القائد في النموذج أدناه
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* اختيار القائد */}
-            <div className="md:col-span-2">
-              <Label htmlFor="leader_name" className="text-lg font-semibold text-gray-700 mb-2 block">
-                القائد المسؤول <span className="text-red-500">*</span>
-              </Label>
-              <Select value={formData.leader_name} onValueChange={(value) => handleInputChange('leader_name', value)}>
-                <SelectTrigger className="rtl-input h-12 text-lg border-2 border-gray-200">
-                  <SelectValue placeholder="اختر القائد المسؤول" />
-                </SelectTrigger>
-                <SelectContent>
-                  {leaders.map((leader) =>
-                  <SelectItem key={leader.id} value={leader.full_name}>
-                      <div className="flex items-center gap-2">
-                        <Crown size={16} className="text-yellow-600" />
-                        {leader.full_name}
-                      </div>
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* الاسم الثلاثي */}
             <div className="md:col-span-2">
               <Label htmlFor="full_name" className="text-lg font-semibold text-gray-700 mb-2 block">
@@ -228,7 +157,6 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
                 placeholder="أدخل الاسم الثلاثي كاملاً"
                 className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400"
                 required />
-
             </div>
 
             {/* رقم الهاتف */}
@@ -243,7 +171,6 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="07xxxxxxxxx"
                 className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
-
             </div>
 
             {/* عنوان السكن */}
@@ -258,7 +185,6 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
                 onChange={(e) => handleInputChange('residence', e.target.value)}
                 placeholder="المحافظة - المنطقة"
                 className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
-
             </div>
 
             {/* مكان العمل */}
@@ -273,7 +199,6 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
                 onChange={(e) => handleInputChange('workplace', e.target.value)}
                 placeholder="الشركة أو المؤسسة"
                 className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
-
             </div>
 
             {/* رقم المحطة */}
@@ -288,7 +213,6 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
                 onChange={(e) => handleInputChange('station_number', e.target.value)}
                 placeholder="رقم المحطة"
                 className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
-
             </div>
 
             {/* معلومات المركز */}
@@ -303,7 +227,6 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
                 onChange={(e) => handleInputChange('center_info', e.target.value)}
                 placeholder="اسم وموقع المركز الانتخابي"
                 className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
-
             </div>
 
             {/* عدد الأصوات */}
@@ -319,7 +242,6 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
                 onChange={(e) => handleInputChange('votes_count', parseInt(e.target.value) || 0)}
                 placeholder="0"
                 className="rtl-input text-lg h-12 border-2 border-gray-200 focus:border-blue-400" />
-
             </div>
           </div>
 
@@ -330,23 +252,20 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
               onClick={() => setIsOpen(false)}
               className="h-12 px-8 text-lg font-semibold"
               disabled={isLoading}>
-
               إلغاء
             </Button>
             <Button
               type="submit"
               className="btn-formal h-12 px-8 text-lg font-semibold"
               disabled={isLoading}>
-
               {isLoading ?
               <>
                   <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
                   جاري الحفظ...
                 </> :
-
               <>
-                  <Users size={20} className="ml-2" />
-                  حفظ الفرد
+                  <Edit2 size={20} className="ml-2" />
+                  حفظ التعديلات
                 </>
               }
             </Button>
@@ -354,5 +273,4 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
         </form>
       </DialogContent>
     </Dialog>);
-
 }

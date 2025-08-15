@@ -1,7 +1,6 @@
-
-async function addPerson(personData) {
+async function updatePerson(personData) {
   try {
-    // First, get the leader's ID from the leader name
+    // Get leader ID if leader_name is provided
     let leaderId = null;
     if (personData.leader_name) {
       const { data: leaderData, error: leaderError } = await ezsite.api.tablePage('election_people', {
@@ -23,17 +22,12 @@ async function addPerson(personData) {
         ]
       });
 
-      if (leaderError) {
-        console.error('خطأ في العثور على القائد:', leaderError);
-      } else {
-        const leaders = leaderData?.List || [];
-        if (leaders.length > 0) {
-          leaderId = leaders[0].ID;
-        }
+      if (!leaderError && leaderData?.List && leaderData.List.length > 0) {
+        leaderId = leaderData.List[0].ID;
       }
     }
 
-    const { data, error } = await ezsite.api.tableCreate('election_people', {
+    const { data, error } = await ezsite.api.tableUpdate('election_people', personData.id, {
       full_name: personData.full_name || '',
       person_type: 'INDIVIDUAL',
       residence: personData.residence || '',
@@ -44,19 +38,40 @@ async function addPerson(personData) {
       votes_count: personData.votes_count || 0,
       leader_id: leaderId,
       leader_name: personData.leader_name || '',
-      created_by: 'admin',
-      status: 'ACTIVE'
+      updated_at: new Date().toISOString()
     });
 
     if (error) {
-      throw new Error(`خطأ في إضافة الفرد: ${error}`);
+      throw new Error(`خطأ في تعديل بيانات الفرد: ${error}`);
     }
 
-    // Create hierarchy relationship if leader exists
+    // Update hierarchy relationship if leader changed
     if (leaderId) {
+      // Delete existing hierarchy records for this person
+      const { data: existingHierarchy, error: hierarchyError } = await ezsite.api.tablePage('election_hierarchy', {
+        PageNo: 1,
+        PageSize: 1000,
+        OrderByField: "id",
+        IsAsc: false,
+        Filters: [
+          {
+            name: "person_id",
+            op: "Equal",
+            value: personData.id
+          }
+        ]
+      });
+
+      if (!hierarchyError && existingHierarchy?.List) {
+        for (const record of existingHierarchy.List) {
+          await ezsite.api.tableDelete('election_hierarchy', record.ID);
+        }
+      }
+
+      // Create new hierarchy relationship
       await ezsite.api.tableCreate('election_hierarchy', {
         leader_id: leaderId,
-        person_id: data?.ID || 0,
+        person_id: personData.id,
         relationship_type: 'DIRECT',
         level: 1,
         created_at: new Date().toISOString()
@@ -65,15 +80,15 @@ async function addPerson(personData) {
 
     // Log the operation to audit table
     await ezsite.api.tableCreate('election_audit', {
-      operation: 'CREATE',
+      operation: 'UPDATE',
       table_name: 'election_people',
-      record_id: data?.ID || 0,
+      record_id: personData.id,
       user_id: 'admin',
-      old_values: null,
+      old_values: JSON.stringify({ action: 'update_person' }),
       new_values: JSON.stringify({
-        action: 'create_person',
         person_name: personData.full_name,
-        leader_name: personData.leader_name
+        leader_name: personData.leader_name,
+        votes_count: personData.votes_count
       }),
       timestamp: new Date().toISOString(),
       ip_address: '127.0.0.1'
@@ -81,7 +96,7 @@ async function addPerson(personData) {
 
     return data;
   } catch (error) {
-    console.error('Add person error:', error);
+    console.error('Update person error:', error);
     throw error;
   }
 }

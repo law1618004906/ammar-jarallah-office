@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface LeaderFormData {
   full_name: string;
+  person_type: 'LEADER';
   residence: string;
   phone: string;
   workplace: string;
@@ -27,6 +28,7 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<LeaderFormData>({
     full_name: '',
+    person_type: 'LEADER',
     residence: '',
     phone: '',
     workplace: '',
@@ -97,6 +99,7 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
       // Reset form
       setFormData({
         full_name: '',
+        person_type: 'LEADER',
         residence: '',
         phone: '',
         workplace: '',

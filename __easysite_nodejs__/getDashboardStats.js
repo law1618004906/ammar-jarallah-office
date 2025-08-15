@@ -1,26 +1,37 @@
-
 async function getDashboardStats() {
   try {
-    // Get leaders count and data
-    const { data: leadersData, error: leadersError } = await ezsite.api.tablePage(34596, {
+    // Get leaders count and data from unified database
+    const { data: leadersData, error: leadersError } = await ezsite.api.tablePage('election_people', {
       PageNo: 1,
       PageSize: 1000,
       OrderByField: "id",
       IsAsc: false,
-      Filters: []
+      Filters: [
+        {
+          name: "person_type",
+          op: "Equal",
+          value: "LEADER"
+        }
+      ]
     });
 
     if (leadersError) {
       throw new Error(`خطأ في جلب بيانات القادة: ${leadersError}`);
     }
 
-    // Get persons count and data
-    const { data: personsData, error: personsError } = await ezsite.api.tablePage(34597, {
+    // Get persons count and data from unified database
+    const { data: personsData, error: personsError } = await ezsite.api.tablePage('election_people', {
       PageNo: 1,
       PageSize: 1000,
       OrderByField: "id",
       IsAsc: false,
-      Filters: []
+      Filters: [
+        {
+          name: "person_type",
+          op: "Equal",
+          value: "INDIVIDUAL"
+        }
+      ]
     });
 
     if (personsError) {
@@ -43,7 +54,9 @@ async function getDashboardStats() {
     // Get top leaders (with their persons' votes included)
     const topLeaders = [];
     for (const leader of leaders.slice(0, 5)) {
-      const leaderPersons = persons.filter((p) => p.leader_name === leader.full_name);
+      const leaderPersons = persons.filter((p) => 
+        p.leader_id === leader.ID || p.leader_name === leader.full_name
+      );
       const leaderPersonsVotes = leaderPersons.reduce((sum, p) => sum + (p.votes_count || 0), 0);
       const leaderTotalVotes = (leader.votes_count || 0) + leaderPersonsVotes;
 
@@ -59,22 +72,22 @@ async function getDashboardStats() {
 
     // Recent activity simulation
     const recentActivity = [
-    {
-      type: 'info',
-      message: 'تم تحديث بيانات النظام بنجاح',
-      timestamp: 'منذ 5 دقائق'
-    },
-    {
-      type: 'success',
-      message: 'تم إضافة قائد جديد للنظام',
-      timestamp: 'منذ ساعة واحدة'
-    },
-    {
-      type: 'info',
-      message: 'تم تحديث معلومات الأفراد',
-      timestamp: 'منذ ساعتين'
-    }];
-
+      {
+        type: 'info',
+        message: 'تم تحديث بيانات النظام بنجاح',
+        timestamp: 'منذ 5 دقائق'
+      },
+      {
+        type: 'success',
+        message: 'تم إضافة قائد جديد للنظام',
+        timestamp: 'منذ ساعة واحدة'
+      },
+      {
+        type: 'info',
+        message: 'تم تحديث معلومات الأفراد',
+        timestamp: 'منذ ساعتين'
+      }
+    ];
 
     return {
       totalLeaders,
@@ -86,6 +99,7 @@ async function getDashboardStats() {
     };
 
   } catch (error) {
+    console.error('Dashboard stats error:', error);
     throw new Error(`خطأ في إحصائيات لوحة التحكم: ${error.message}`);
   }
 }

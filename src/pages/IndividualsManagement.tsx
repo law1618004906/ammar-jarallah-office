@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import AddPersonModal from '@/components/AddPersonModal';
+import EditPersonModal from '@/components/EditPersonModal';
 import AddSampleDataButton from '@/components/AddSampleDataButton';
 
 interface Person {
@@ -87,6 +89,38 @@ export default function IndividualsManagement() {
     return matchesSearch && matchesLeader;
   });
 
+  const handleDeletePerson = async (personId: number, personName: string) => {
+    try {
+      const { data, error } = await window.ezsite.apis.run({
+        path: "deletePerson",
+        param: [personId]
+      });
+
+      if (error) {
+        toast({
+          title: "خطأ في حذف الفرد",
+          description: error,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "تم الحذف بنجاح",
+        description: `تم حذف الفرد ${personName} بنجاح`
+      });
+
+      fetchPersons();
+    } catch (error) {
+      console.error('خطأ في حذف الفرد:', error);
+      toast({
+        title: "خطأ في الحذف",
+        description: "حدث خطأ أثناء حذف الفرد",
+        variant: "destructive"
+      });
+    }
+  };
+
   const PersonCard = ({ person }: {person: Person;}) =>
   <Card className="formal-card interactive-hover formal-shadow">
       <CardHeader className="pb-4">
@@ -145,14 +179,31 @@ export default function IndividualsManagement() {
       }
 
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
-          <Button variant="outline" size="sm" className="formal-shadow border-blue-200 hover:border-blue-400 hover:bg-blue-50">
-            <Edit2 size={16} className="ml-2" />
-            تعديل
-          </Button>
-          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-400 hover:bg-red-50">
-            <Trash2 size={16} className="ml-2" />
-            حذف
-          </Button>
+          <EditPersonModal person={person} onPersonUpdated={fetchPersons} />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-400 hover:bg-red-50">
+                <Trash2 size={16} className="ml-2" />
+                حذف
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent dir="rtl">
+              <AlertDialogHeader>
+                <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+                <AlertDialogDescription>
+                  هل أنت متأكد من أنك تريد حذف الفرد <span className="font-bold">{person.full_name}</span>؟
+                  <br />
+                  لا يمكن التراجع عن هذا الإجراء.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleDeletePerson(person.id, person.full_name)} className="bg-red-600 hover:bg-red-700">
+                  حذف
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardContent>
     </Card>;
