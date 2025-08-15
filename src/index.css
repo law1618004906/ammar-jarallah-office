@@ -464,3 +464,20 @@ body {
     box-shadow: none !important;
   }
 }
+
+/* --- Force-hide any injected EasySite chatbot widget (platform-injected) --- */
+/* Tries multiple selectors to cover different widget implementations */
+#ezsite-chatbot,
+.ezsite-chatbot,
+[class*="ezsite-chatbot"],
+[id*="ezsite-chatbot"],
+[class*="chatbot"],
+[id*="chatbot"],
+iframe[src*="ezsite"],
+iframe[src*="ezsite.ai"],
+div[id^="ezsite" i][class*="chat" i] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
