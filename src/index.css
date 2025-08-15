@@ -1,0 +1,125 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* إعداد اللغة العربية والخط */
+:root {
+  --font-family: 'Cairo', sans-serif;
+  --primary-color: #8b5cf6;
+  --secondary-color: #a78bfa;
+  --accent-color: #c4b5fd;
+}
+
+* {
+  font-family: var(--font-family);
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  font-family: var(--font-family);
+  direction: rtl;
+  text-align: right;
+}
+
+/* تصميم متدرج بنفسجي */
+.gradient-purple {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa, #c4b5fd);
+}
+
+.gradient-purple-soft {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(167, 139, 250, 0.1), rgba(196, 181, 253, 0.1));
+}
+
+/* تأثيرات العرض الشجري */
+.tree-node {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.tree-node:hover {
+  transform: translateX(-5px);
+}
+
+.tree-node.selected {
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+}
+
+/* خطوط الاتصال في الشجرة */
+.tree-connector::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -20px;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(to bottom, #8b5cf6, #a78bfa);
+}
+
+/* أيقونات مخصصة */
+.crown-icon {
+  color: #f59e0b;
+  filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3));
+}
+
+.user-icon {
+  color: #3b82f6;
+  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
+}
+
+/* تحسينات التمرير */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}
+
+/* تأثيرات التفاعل */
+.interactive-hover {
+  transition: all 0.2s ease;
+}
+
+.interactive-hover:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+}
+
+/* تصميم الأزرار العربية */
+.btn-arabic {
+  font-family: var(--font-family);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* تخصيص الخانات للعربية */
+.rtl-input {
+  text-align: right;
+  direction: rtl;
+}
+
+/* تحسين العرض على الهواتف */
+@media (max-width: 768px) {
+  .tree-node {
+    padding: 12px 8px;
+  }
+  
+  .tree-connector::before {
+    right: -15px;
+  }
+}
