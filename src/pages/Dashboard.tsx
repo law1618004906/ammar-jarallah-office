@@ -73,8 +73,8 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!stats) {
@@ -88,8 +88,8 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -184,8 +184,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.topLeaders.map((leader, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                {stats.topLeaders.map((leader, index) =>
+                <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full border-2 border-blue-200">
                         <span className="text-blue-700 font-bold text-lg">{index + 1}</span>
@@ -202,7 +202,7 @@ export default function Dashboard() {
                       {leader.totalVotes} صوت
                     </Badge>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -222,8 +222,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start gap-4 p-4 border border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm">
+                {stats.recentActivity.map((activity, index) =>
+                <div key={index} className="flex items-start gap-4 p-4 border border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm">
                     <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
                       <BarChart3 size={18} className="text-blue-600" />
                     </div>
@@ -232,7 +232,7 @@ export default function Dashboard() {
                       <div className="text-sm formal-subtitle mt-1">{activity.timestamp}</div>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -254,32 +254,32 @@ export default function Dashboard() {
                 <Button
                   variant="outline"
                   className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-300"
-                  onClick={fetchDashboardStats}
-                >
+                  onClick={fetchDashboardStats}>
+
                   <BarChart3 size={24} className="text-blue-600" />
                   <span className="font-semibold">تحديث الإحصائيات</span>
                 </Button>
                 
                 <Button
                   variant="outline"
-                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-300"
-                >
+                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-300">
+
                   <Users size={24} className="text-green-600" />
                   <span className="font-semibold">تقرير شامل</span>
                 </Button>
                 
                 <Button
                   variant="outline"
-                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-300"
-                >
+                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-300">
+
                   <Phone size={24} className="text-purple-600" />
                   <span className="font-semibold">قائمة الاتصال</span>
                 </Button>
                 
                 <Button
                   variant="outline"
-                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all duration-300"
-                >
+                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all duration-300">
+
                   <Calendar size={24} className="text-orange-600" />
                   <span className="font-semibold">تقرير شهري</span>
                 </Button>
@@ -288,6 +288,6 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

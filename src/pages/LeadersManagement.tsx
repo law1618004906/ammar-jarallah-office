@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import AddLeaderModal from '@/components/AddLeaderModal';
 
 interface Leader {
   id: number;
@@ -67,14 +68,14 @@ export default function LeadersManagement() {
 
   // تصفية القادة حسب البحث
   const filteredLeaders = leaders.filter((leader) =>
-    leader.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    leader.phone.includes(searchTerm) ||
-    leader.residence.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    leader.workplace.toLowerCase().includes(searchTerm.toLowerCase())
+  leader.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  leader.phone.includes(searchTerm) ||
+  leader.residence.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  leader.workplace.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const LeaderCard = ({ leader }: { leader: Leader; }) => (
-    <Card className="formal-card interactive-hover formal-shadow">
+  const LeaderCard = ({ leader }: {leader: Leader;}) =>
+  <Card className="formal-card interactive-hover formal-shadow">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
@@ -96,33 +97,33 @@ export default function LeadersManagement() {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {leader.phone && (
-          <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+        {leader.phone &&
+      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
             <Phone size={18} className="text-green-600" />
             <span dir="ltr" className="font-mono text-gray-700">{leader.phone}</span>
           </div>
-        )}
+      }
         
-        {leader.residence && (
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        {leader.residence &&
+      <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <MapPin size={18} className="text-blue-600" />
             <span className="text-gray-700">{leader.residence}</span>
           </div>
-        )}
+      }
         
-        {leader.workplace && (
-          <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+        {leader.workplace &&
+      <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
             <Briefcase size={18} className="text-purple-600" />
             <span className="text-gray-700">{leader.workplace}</span>
           </div>
-        )}
+      }
         
-        {leader.center_info && (
-          <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+        {leader.center_info &&
+      <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
             <Building size={18} className="text-orange-600" />
             <span className="text-gray-700">{leader.center_info}</span>
           </div>
-        )}
+      }
 
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
           <Button variant="outline" size="sm" className="formal-shadow border-blue-200 hover:border-blue-400 hover:bg-blue-50">
@@ -135,8 +136,8 @@ export default function LeadersManagement() {
           </Button>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
+
 
   if (loading) {
     return (
@@ -149,8 +150,8 @@ export default function LeadersManagement() {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -186,21 +187,18 @@ export default function LeadersManagement() {
                       placeholder="البحث في القادة (الاسم، الهاتف، السكن، العمل...)"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pr-12 rtl-input text-lg h-14 formal-shadow border-2 border-gray-200 focus:border-blue-400"
-                    />
+                      className="pr-12 rtl-input text-lg h-14 formal-shadow border-2 border-gray-200 focus:border-blue-400" />
+
                   </div>
                 </div>
                 
                 <div className="flex gap-3">
-                  <Button className="btn-formal h-12 px-6 text-lg font-semibold">
-                    <Plus size={20} className="ml-2" />
-                    إضافة قائد جديد
-                  </Button>
-                  <Button 
-                    variant="outline" 
+                  <AddLeaderModal onLeaderAdded={fetchLeaders} />
+                  <Button
+                    variant="outline"
                     onClick={fetchLeaders}
-                    className="h-12 px-6 text-lg font-semibold formal-shadow border-2 border-blue-200 hover:border-blue-400"
-                  >
+                    className="h-12 px-6 text-lg font-semibold formal-shadow border-2 border-blue-200 hover:border-blue-400">
+
                     تحديث البيانات
                   </Button>
                 </div>
@@ -234,8 +232,8 @@ export default function LeadersManagement() {
         </div>
 
         {/* قائمة القادة */}
-        {filteredLeaders.length === 0 ? (
-          <div className="text-center py-16">
+        {filteredLeaders.length === 0 ?
+        <div className="text-center py-16">
             <Crown className="mx-auto text-gray-400 mb-6" size={80} />
             <h3 className="text-2xl font-semibold text-gray-600 mb-4">
               {searchTerm ? 'لا توجد نتائج للبحث' : 'لا توجد قادة مسجلون'}
@@ -243,18 +241,18 @@ export default function LeadersManagement() {
             <p className="formal-subtitle text-lg">
               {searchTerm ? 'جرب تغيير كلمات البحث' : 'ابدأ بإضافة قائد جديد'}
             </p>
+          </div> :
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredLeaders.map((leader) =>
+          <LeaderCard key={leader.id} leader={leader} />
+          )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredLeaders.map((leader) => (
-              <LeaderCard key={leader.id} leader={leader} />
-            ))}
-          </div>
-        )}
+        }
 
         {/* معلومات إضافية */}
-        {searchTerm && filteredLeaders.length > 0 && (
-          <div className="mt-12 text-center">
+        {searchTerm && filteredLeaders.length > 0 &&
+        <div className="mt-12 text-center">
             <div className="formal-card rounded-xl p-6">
               <p className="formal-subtitle text-lg">
                 تم العثور على <span className="font-bold text-blue-600 text-xl">{filteredLeaders.length}</span> قائد
@@ -262,8 +260,8 @@ export default function LeadersManagement() {
               </p>
             </div>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }

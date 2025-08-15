@@ -83,8 +83,8 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   className="btn-formal h-20 text-xl font-bold px-10 py-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300"
-                  onClick={() => navigate('/leaders-tree')}
-                >
+                  onClick={() => navigate('/leaders-tree')}>
+
                   <TreePine className="ml-3" size={28} />
                   العرض الشجري التفاعلي
                   <span className="block text-sm mt-1 opacity-90">استعراض الهيكل التنظيمي</span>
@@ -92,8 +92,8 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 h-20 text-xl font-bold px-10 py-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300"
-                  onClick={() => navigate('/dashboard')}
-                >
+                  onClick={() => navigate('/dashboard')}>
+
                   <BarChart3 className="ml-3" size={28} />
                   لوحة التحكم الإحصائية
                   <span className="block text-sm mt-1 opacity-90">التحليلات والمؤشرات</span>
@@ -105,8 +105,8 @@ export default function HomePage() {
                   variant="outline"
                   size="lg"
                   className="w-full formal-shadow-lg h-16 text-lg font-semibold px-12 py-4 rounded-xl border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                  onClick={() => navigate('/login')}
-                >
+                  onClick={() => navigate('/login')}>
+
                   <LogIn className="ml-3" size={24} />
                   دخول النظام الآمن
                   <ArrowRight className="mr-3" size={24} />
@@ -132,8 +132,8 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 className="formal-shadow-lg h-32 flex flex-col items-center gap-4 p-8 rounded-xl hover:bg-blue-50 transition-all duration-300 border border-transparent hover:border-blue-200"
-                onClick={() => navigate('/leaders')}
-              >
+                onClick={() => navigate('/leaders')}>
+
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
                   <Crown size={32} className="text-blue-600" />
                 </div>
@@ -143,8 +143,8 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 className="formal-shadow-lg h-32 flex flex-col items-center gap-4 p-8 rounded-xl hover:bg-green-50 transition-all duration-300 border border-transparent hover:border-green-200"
-                onClick={() => navigate('/individuals')}
-              >
+                onClick={() => navigate('/individuals')}>
+
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                   <Users size={32} className="text-green-600" />
                 </div>
@@ -154,8 +154,8 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 className="formal-shadow-lg h-32 flex flex-col items-center gap-4 p-8 rounded-xl hover:bg-purple-50 transition-all duration-300 border border-transparent hover:border-purple-200"
-                onClick={() => navigate('/dashboard')}
-              >
+                onClick={() => navigate('/dashboard')}>
+
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
                   <BarChart3 size={32} className="text-purple-600" />
                 </div>
@@ -165,8 +165,8 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 className="formal-shadow-lg h-32 flex flex-col items-center gap-4 p-8 rounded-xl hover:bg-orange-50 transition-all duration-300 border border-transparent hover:border-orange-200"
-                onClick={() => navigate('/leaders-tree')}
-              >
+                onClick={() => navigate('/leaders-tree')}>
+
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
                   <TreePine size={32} className="text-orange-600" />
                 </div>
@@ -216,6 +216,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

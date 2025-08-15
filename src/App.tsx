@@ -32,12 +32,12 @@ function AppContent() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
-    </div>
-  );
+    </div>);
+
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () =>
+<QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
@@ -45,7 +45,7 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
-  </QueryClientProvider>
-);
+  </QueryClientProvider>;
+
 
 export default App;

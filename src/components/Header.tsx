@@ -12,12 +12,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { icon: Home, label: 'الرئيسية', path: '/' },
-  { icon: TreePine, label: 'العرض الشجري', path: '/leaders-tree' },
-  { icon: BarChart3, label: 'لوحة التحكم', path: '/dashboard' },
-  { icon: Crown, label: 'القادة', path: '/leaders' },
-  { icon: Users, label: 'الأفراد', path: '/individuals' }
-];
+{ icon: Home, label: 'الرئيسية', path: '/' },
+{ icon: TreePine, label: 'العرض الشجري', path: '/leaders-tree' },
+{ icon: BarChart3, label: 'لوحة التحكم', path: '/dashboard' },
+{ icon: Crown, label: 'القادة', path: '/leaders' },
+{ icon: Users, label: 'الأفراد', path: '/individuals' }];
+
 
 export default function Header() {
   const navigate = useNavigate();
@@ -60,15 +60,15 @@ export default function Header() {
                   size="sm"
                   onClick={() => navigate(item.path)}
                   className={`flex items-center gap-2 px-4 py-2 font-semibold transition-all duration-300 ${
-                    isActive
-                      ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-lg'
-                      : 'text-blue-100 hover:text-white hover:bg-blue-700/30 backdrop-blur-sm'
-                  }`}
-                >
+                  isActive ?
+                  'bg-white text-blue-700 hover:bg-gray-100 shadow-lg' :
+                  'text-blue-100 hover:text-white hover:bg-blue-700/30 backdrop-blur-sm'}`
+                  }>
+
                   <Icon size={18} />
                   <span className="font-medium">{item.label}</span>
-                </Button>
-              );
+                </Button>);
+
             })}
           </nav>
 
@@ -78,8 +78,8 @@ export default function Header() {
               variant="outline"
               size="sm"
               onClick={() => navigate('/login')}
-              className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold"
-            >
+              className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold">
+
               <LogIn size={18} />
               <span className="hidden sm:inline">تسجيل الدخول</span>
             </Button>
@@ -100,19 +100,19 @@ export default function Header() {
                   size="sm"
                   onClick={() => navigate(item.path)}
                   className={`flex items-center gap-2 whitespace-nowrap px-3 py-2 text-sm font-medium transition-all duration-300 ${
-                    isActive
-                      ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-lg'
-                      : 'text-blue-100 hover:text-white hover:bg-blue-700/30'
-                  }`}
-                >
+                  isActive ?
+                  'bg-white text-blue-700 hover:bg-gray-100 shadow-lg' :
+                  'text-blue-100 hover:text-white hover:bg-blue-700/30'}`
+                  }>
+
                   <Icon size={16} />
                   <span>{item.label}</span>
-                </Button>
-              );
+                </Button>);
+
             })}
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import AddPersonModal from '@/components/AddPersonModal';
 
 interface Person {
   id: number;
@@ -75,18 +76,18 @@ export default function IndividualsManagement() {
   // تصفية الأفراد حسب البحث والقائد المختار
   const filteredPersons = persons.filter((person) => {
     const matchesSearch = person.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.phone.includes(searchTerm) ||
-      person.residence.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.workplace.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.leader_name.toLowerCase().includes(searchTerm.toLowerCase());
+    person.phone.includes(searchTerm) ||
+    person.residence.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.workplace.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.leader_name.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesLeader = !selectedLeader || person.leader_name === selectedLeader;
 
     return matchesSearch && matchesLeader;
   });
 
-  const PersonCard = ({ person }: { person: Person; }) => (
-    <Card className="formal-card interactive-hover formal-shadow">
+  const PersonCard = ({ person }: {person: Person;}) =>
+  <Card className="formal-card interactive-hover formal-shadow">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
@@ -109,29 +110,29 @@ export default function IndividualsManagement() {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {person.phone && (
-          <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+        {person.phone &&
+      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
             <Phone size={18} className="text-green-600" />
             <span dir="ltr" className="font-mono text-gray-700">{person.phone}</span>
           </div>
-        )}
+      }
         
-        {person.residence && (
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        {person.residence &&
+      <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <MapPin size={18} className="text-blue-600" />
             <span className="text-gray-700">{person.residence}</span>
           </div>
-        )}
+      }
         
-        {person.workplace && (
-          <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+        {person.workplace &&
+      <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
             <Briefcase size={18} className="text-purple-600" />
             <span className="text-gray-700">{person.workplace}</span>
           </div>
-        )}
+      }
         
-        {person.center_info && (
-          <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+        {person.center_info &&
+      <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
             <div className="flex items-center gap-2 text-orange-600 text-sm font-medium mb-1">
               <Building size={16} />
               المركز الانتخابي
@@ -140,7 +141,7 @@ export default function IndividualsManagement() {
               {person.center_info} - محطة {person.station_number}
             </div>
           </div>
-        )}
+      }
 
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
           <Button variant="outline" size="sm" className="formal-shadow border-blue-200 hover:border-blue-400 hover:bg-blue-50">
@@ -153,8 +154,8 @@ export default function IndividualsManagement() {
           </Button>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
+
 
   if (loading) {
     return (
@@ -167,8 +168,8 @@ export default function IndividualsManagement() {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -205,21 +206,18 @@ export default function IndividualsManagement() {
                         placeholder="البحث في الأفراد (الاسم، الهاتف، القائد...)"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pr-12 rtl-input text-lg h-14 formal-shadow border-2 border-gray-200 focus:border-blue-400"
-                      />
+                        className="pr-12 rtl-input text-lg h-14 formal-shadow border-2 border-gray-200 focus:border-blue-400" />
+
                     </div>
                   </div>
                   
                   <div className="flex gap-3">
-                    <Button className="btn-formal h-12 px-6 text-lg font-semibold">
-                      <Plus size={20} className="ml-2" />
-                      إضافة فرد جديد
-                    </Button>
-                    <Button 
-                      variant="outline" 
+                    <AddPersonModal onPersonAdded={fetchPersons} />
+                    <Button
+                      variant="outline"
                       onClick={fetchPersons}
-                      className="h-12 px-6 text-lg font-semibold formal-shadow border-2 border-blue-200 hover:border-blue-400"
-                    >
+                      className="h-12 px-6 text-lg font-semibold formal-shadow border-2 border-blue-200 hover:border-blue-400">
+
                       تحديث البيانات
                     </Button>
                   </div>
@@ -233,11 +231,11 @@ export default function IndividualsManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">جميع القادة</SelectItem>
-                      {uniqueLeaders.map((leader) => (
-                        <SelectItem key={leader} value={leader}>
+                      {uniqueLeaders.map((leader) =>
+                      <SelectItem key={leader} value={leader}>
                           {leader}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -269,8 +267,8 @@ export default function IndividualsManagement() {
         </div>
 
         {/* قائمة الأفراد */}
-        {filteredPersons.length === 0 ? (
-          <div className="text-center py-16">
+        {filteredPersons.length === 0 ?
+        <div className="text-center py-16">
             <Users className="mx-auto text-gray-400 mb-6" size={80} />
             <h3 className="text-2xl font-semibold text-gray-600 mb-4">
               {searchTerm || selectedLeader ? 'لا توجد نتائج للبحث' : 'لا توجد أفراد مسجلون'}
@@ -278,32 +276,32 @@ export default function IndividualsManagement() {
             <p className="formal-subtitle text-lg">
               {searchTerm || selectedLeader ? 'جرب تغيير معايير البحث' : 'ابدأ بإضافة فرد جديد'}
             </p>
+          </div> :
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredPersons.map((person) =>
+          <PersonCard key={person.id} person={person} />
+          )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPersons.map((person) => (
-              <PersonCard key={person.id} person={person} />
-            ))}
-          </div>
-        )}
+        }
 
         {/* معلومات إضافية */}
-        {(searchTerm || selectedLeader) && filteredPersons.length > 0 && (
-          <div className="mt-12 text-center">
+        {(searchTerm || selectedLeader) && filteredPersons.length > 0 &&
+        <div className="mt-12 text-center">
             <div className="formal-card rounded-xl p-6">
               <p className="formal-subtitle text-lg">
                 تم العثور على <span className="font-bold text-blue-600 text-xl">{filteredPersons.length}</span> فرد
                 من أصل <span className="font-bold text-xl">{persons.length}</span>
-                {selectedLeader && (
-                  <>
+                {selectedLeader &&
+              <>
                     {" "}للقائد <span className="font-bold text-purple-600 text-xl">{selectedLeader}</span>
                   </>
-                )}
+              }
               </p>
             </div>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
