@@ -17,7 +17,7 @@ async function getLeadersTree() {
 
   // Build the tree structure
   const tree = [];
-  
+
   for (const leader of leaders) {
     // Get persons for this leader
     const { data: personsResult, error: personsError } = await ezsite.api.tablePage(34597, {
@@ -26,12 +26,12 @@ async function getLeadersTree() {
       OrderByField: "id",
       IsAsc: false,
       Filters: [
-        {
-          name: "leader_name",
-          op: "Equal",
-          value: leader.full_name
-        }
-      ]
+      {
+        name: "leader_name",
+        op: "Equal",
+        value: leader.full_name
+      }]
+
     });
 
     if (personsError) {
@@ -56,7 +56,7 @@ async function getLeadersTree() {
         directVotes: leader.votes_count || 0,
         personsCount: persons.length
       },
-      children: persons.map(person => ({
+      children: persons.map((person) => ({
         id: `person-${person.id}`,
         name: person.full_name || 'غير محدد',
         type: 'person',

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Crown, Home, TreePine, BarChart3, Users, User, LogIn } from 'lucide-react';
+import { Crown, Home, TreePine, BarChart3, Users, User, LogIn, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -12,34 +12,43 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-{ icon: Home, label: 'الرئيسية', path: '/' },
-{ icon: TreePine, label: 'العرض الشجري', path: '/leaders-tree' },
-{ icon: BarChart3, label: 'لوحة التحكم', path: '/dashboard' },
-{ icon: Crown, label: 'القادة', path: '/leaders' },
-{ icon: Users, label: 'الأفراد', path: '/individuals' }];
-
+  { icon: Home, label: 'الرئيسية', path: '/' },
+  { icon: TreePine, label: 'العرض الشجري', path: '/leaders-tree' },
+  { icon: BarChart3, label: 'لوحة التحكم', path: '/dashboard' },
+  { icon: Crown, label: 'القادة', path: '/leaders' },
+  { icon: Users, label: 'الأفراد', path: '/individuals' }
+];
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" dir="rtl">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* الشعار والعنوان */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Crown className="text-purple-600" size={24} />
+    <header className="formal-header sticky top-0 z-50">
+      <div className="container mx-auto px-6">
+        <div className="flex items-center justify-between h-20">
+          {/* الشعار الرسمي والعنوان */}
+          <div className="flex items-center gap-4">
+            <div className="official-logo">
+              <Shield className="text-white" size={32} />
             </div>
             <div>
-              <h1 className="font-bold text-purple-800 text-lg">نظام إدارة البيانات الانتخابية</h1>
-              <p className="text-xs text-purple-600">مكتب النائب عمار جار الله</p>
+              <h1 className="text-2xl font-bold text-white mb-1">
+                نظام إدارة البيانات الانتخابية
+              </h1>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-blue-200 font-medium">
+                  مكتب النائب عمار جار الله
+                </p>
+                <Badge className="bg-yellow-500 text-yellow-900 text-xs font-semibold px-2 py-1">
+                  رسمي
+                </Badge>
+              </div>
             </div>
           </div>
 
           {/* التنقل الرئيسي */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -50,36 +59,36 @@ export default function Header() {
                   variant={isActive ? "default" : "ghost"}
                   size="sm"
                   onClick={() => navigate(item.path)}
-                  className={`flex items-center gap-2 ${
-                  isActive ?
-                  "bg-purple-600 hover:bg-purple-700 text-white" :
-                  "text-gray-600 hover:text-purple-600 hover:bg-purple-50"}`
-                  }>
-
-                  <Icon size={16} />
-                  {item.label}
-                </Button>);
-
+                  className={`flex items-center gap-2 px-4 py-2 font-semibold transition-all duration-300 ${
+                    isActive
+                      ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-lg'
+                      : 'text-blue-100 hover:text-white hover:bg-blue-700/30 backdrop-blur-sm'
+                  }`}
+                >
+                  <Icon size={18} />
+                  <span className="font-medium">{item.label}</span>
+                </Button>
+              );
             })}
           </nav>
 
           {/* أزرار العمل */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate('/login')}
-              className="flex items-center gap-2">
-
-              <LogIn size={16} />
+              className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold"
+            >
+              <LogIn size={18} />
               <span className="hidden sm:inline">تسجيل الدخول</span>
             </Button>
           </div>
         </div>
 
-        {/* التنقل المتحرك (للهواتف) */}
-        <div className="md:hidden pb-3">
-          <div className="flex gap-1 overflow-x-auto">
+        {/* التنقل المتحرك (للأجهزة الصغيرة) */}
+        <div className="lg:hidden pb-4">
+          <div className="flex gap-1 overflow-x-auto custom-scrollbar">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -90,20 +99,20 @@ export default function Header() {
                   variant={isActive ? "default" : "ghost"}
                   size="sm"
                   onClick={() => navigate(item.path)}
-                  className={`flex items-center gap-2 whitespace-nowrap ${
-                  isActive ?
-                  "bg-purple-600 hover:bg-purple-700 text-white" :
-                  "text-gray-600 hover:text-purple-600"}`
-                  }>
-
-                  <Icon size={14} />
-                  <span className="text-xs">{item.label}</span>
-                </Button>);
-
+                  className={`flex items-center gap-2 whitespace-nowrap px-3 py-2 text-sm font-medium transition-all duration-300 ${
+                    isActive
+                      ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-lg'
+                      : 'text-blue-100 hover:text-white hover:bg-blue-700/30'
+                  }`}
+                >
+                  <Icon size={16} />
+                  <span>{item.label}</span>
+                </Button>
+              );
             })}
           </div>
         </div>
       </div>
-    </header>);
-
+    </header>
+  );
 }

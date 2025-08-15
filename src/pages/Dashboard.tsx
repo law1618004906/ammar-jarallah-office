@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Crown, Users, Vote, BarChart3, TrendingUp, MapPin, Calendar, Phone } from 'lucide-react';
+import { Crown, Users, Vote, BarChart3, TrendingUp, MapPin, Calendar, Phone, Shield, Award, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,158 +64,175 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
+      <div className="formal-bg min-h-screen p-6">
         <div className="container mx-auto">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
-              <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-lg text-gray-600">جارٍ تحميل الإحصائيات...</p>
+              <div className="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-6"></div>
+              <p className="text-xl formal-subtitle">جارٍ تحميل الإحصائيات...</p>
             </div>
           </div>
         </div>
-      </div>);
-
+      </div>
+    );
   }
 
   if (!stats) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
+      <div className="formal-bg min-h-screen p-6">
         <div className="container mx-auto">
           <div className="text-center">
-            <p className="text-lg text-gray-600">لم يتم العثور على بيانات</p>
-            <Button onClick={fetchDashboardStats} className="mt-4">
+            <p className="text-xl formal-subtitle">لم يتم العثور على بيانات</p>
+            <Button onClick={fetchDashboardStats} className="mt-6 btn-formal">
               إعادة المحاولة
             </Button>
           </div>
         </div>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 pt-4" dir="rtl">
+    <div className="formal-bg min-h-screen pt-6" dir="rtl">
       <div className="container mx-auto p-6">
         {/* العنوان الرئيسي */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+        <div className="formal-card rounded-2xl p-8 mb-8 text-center animate-fade-in-up">
+          <div className="inline-flex items-center justify-center w-20 h-20 official-logo rounded-full mb-6">
+            <BarChart3 className="text-white" size={40} />
+          </div>
+          <h1 className="text-5xl font-bold formal-title mb-4">
             لوحة التحكم والإحصائيات
           </h1>
-          <p className="text-lg text-gray-600">مكتب النائب عمار جار الله</p>
-          <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-blue-500 mx-auto mt-4"></div>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <Badge className="formal-badge text-lg px-4 py-2">
+              <Building size={18} className="ml-2" />
+              مكتب النائب عمار جار الله
+            </Badge>
+            <Badge className="bg-green-500 text-green-900 font-semibold px-3 py-2">
+              <Shield size={16} className="ml-1" />
+              مُحدَّث
+            </Badge>
+          </div>
+          <div className="formal-divider"></div>
         </div>
 
         {/* الإحصائيات الرئيسية */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <Crown size={32} />
-                <div>
-                  <div className="text-sm opacity-90">إجمالي القادة</div>
-                  <div className="text-3xl font-bold">{stats.totalLeaders}</div>
-                </div>
+          <div className="stats-card p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-100 rounded-xl">
+                <Crown size={32} className="text-blue-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <div className="text-sm formal-subtitle font-medium">إجمالي القادة</div>
+                <div className="text-3xl font-bold formal-title">{stats.totalLeaders}</div>
+              </div>
+            </div>
+          </div>
 
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <Users size={32} />
-                <div>
-                  <div className="text-sm opacity-90">إجمالي الأفراد</div>
-                  <div className="text-3xl font-bold">{stats.totalPersons}</div>
-                </div>
+          <div className="stats-card p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-green-100 rounded-xl">
+                <Users size={32} className="text-green-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <div className="text-sm formal-subtitle font-medium">إجمالي الأفراد</div>
+                <div className="text-3xl font-bold formal-title">{stats.totalPersons}</div>
+              </div>
+            </div>
+          </div>
 
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <Vote size={32} />
-                <div>
-                  <div className="text-sm opacity-90">إجمالي الأصوات</div>
-                  <div className="text-3xl font-bold">{stats.totalVotes}</div>
-                </div>
+          <div className="stats-card p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-100 rounded-xl">
+                <Vote size={32} className="text-purple-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <div className="text-sm formal-subtitle font-medium">إجمالي الأصوات</div>
+                <div className="text-3xl font-bold formal-title">{stats.totalVotes}</div>
+              </div>
+            </div>
+          </div>
 
-          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <BarChart3 size={32} />
-                <div>
-                  <div className="text-sm opacity-90">متوسط أصوات/قائد</div>
-                  <div className="text-3xl font-bold">{stats.avgVotesPerLeader}</div>
-                </div>
+          <div className="stats-card p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-orange-100 rounded-xl">
+                <BarChart3 size={32} className="text-orange-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <div className="text-sm formal-subtitle font-medium">متوسط أصوات/قائد</div>
+                <div className="text-3xl font-bold formal-title">{stats.avgVotesPerLeader}</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* المحتوى الرئيسي */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* أفضل القادة */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <TrendingUp className="text-green-600" size={24} />
+          <Card className="formal-card formal-shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-2xl formal-title">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Award className="text-yellow-600" size={24} />
+                </div>
                 أفضل القادة (حسب الأصوات)
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-lg formal-subtitle">
                 القادة الذين حصلوا على أعلى عدد من الأصوات
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.topLeaders.map((leader, index) =>
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full">
-                        <span className="text-purple-600 font-bold">{index + 1}</span>
+                {stats.topLeaders.map((leader, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full border-2 border-blue-200">
+                        <span className="text-blue-700 font-bold text-lg">{index + 1}</span>
                       </div>
                       <div>
-                        <div className="font-semibold text-gray-800">{leader.name}</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="font-bold text-gray-800 text-lg">{leader.name}</div>
+                        <div className="text-sm formal-subtitle">
                           {leader.personsCount} أفراد تابعين
                         </div>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                    <Badge className="formal-badge text-lg px-4 py-2">
+                      <Vote size={16} className="ml-1" />
                       {leader.totalVotes} صوت
                     </Badge>
                   </div>
-                )}
+                ))}
               </div>
             </CardContent>
           </Card>
 
           {/* النشاط الأخير */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <Calendar className="text-blue-600" size={24} />
+          <Card className="formal-card formal-shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-2xl formal-title">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Calendar className="text-green-600" size={24} />
+                </div>
                 النشاط الأخير
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-lg formal-subtitle">
                 آخر العمليات والتحديثات على النظام
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.recentActivity.map((activity, index) =>
-                <div key={index} className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg">
-                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
-                      <BarChart3 size={16} className="text-blue-600" />
+                {stats.recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-start gap-4 p-4 border border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm">
+                    <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
+                      <BarChart3 size={18} className="text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm text-gray-800">{activity.message}</div>
-                      <div className="text-xs text-gray-500 mt-1">{activity.timestamp}</div>
+                      <div className="font-medium text-gray-800">{activity.message}</div>
+                      <div className="text-sm formal-subtitle mt-1">{activity.timestamp}</div>
                     </div>
                   </div>
-                )}
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -223,52 +240,54 @@ export default function Dashboard() {
 
         {/* أدوات إضافية */}
         <div className="mt-8">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <MapPin className="text-purple-600" size={24} />
+          <Card className="formal-card formal-shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-2xl formal-title">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <MapPin className="text-purple-600" size={24} />
+                </div>
                 أدوات سريعة
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 <Button
                   variant="outline"
-                  className="h-16 flex flex-col items-center gap-2"
-                  onClick={fetchDashboardStats}>
-
-                  <BarChart3 size={20} />
-                  <span className="text-sm">تحديث الإحصائيات</span>
+                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-300"
+                  onClick={fetchDashboardStats}
+                >
+                  <BarChart3 size={24} className="text-blue-600" />
+                  <span className="font-semibold">تحديث الإحصائيات</span>
                 </Button>
                 
                 <Button
                   variant="outline"
-                  className="h-16 flex flex-col items-center gap-2">
-
-                  <Users size={20} />
-                  <span className="text-sm">تقرير شامل</span>
+                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-300"
+                >
+                  <Users size={24} className="text-green-600" />
+                  <span className="font-semibold">تقرير شامل</span>
                 </Button>
                 
                 <Button
                   variant="outline"
-                  className="h-16 flex flex-col items-center gap-2">
-
-                  <Phone size={20} />
-                  <span className="text-sm">قائمة الاتصال</span>
+                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-300"
+                >
+                  <Phone size={24} className="text-purple-600" />
+                  <span className="font-semibold">قائمة الاتصال</span>
                 </Button>
                 
                 <Button
                   variant="outline"
-                  className="h-16 flex flex-col items-center gap-2">
-
-                  <Calendar size={20} />
-                  <span className="text-sm">تقرير شهري</span>
+                  className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all duration-300"
+                >
+                  <Calendar size={24} className="text-orange-600" />
+                  <span className="font-semibold">تقرير شهري</span>
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

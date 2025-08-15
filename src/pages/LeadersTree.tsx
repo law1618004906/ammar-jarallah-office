@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Crown, User, ChevronRight, ChevronDown, Phone, MapPin, Briefcase, Vote, Users, BarChart3, ArrowRight, Home } from 'lucide-react';
+import { Crown, User, ChevronRight, ChevronDown, Phone, MapPin, Briefcase, Vote, Users, BarChart3, Home, Shield, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -101,7 +101,7 @@ export default function LeadersTree() {
     setExpandedNodes(newExpanded);
   };
 
-  const TreeNodeView = ({ node, level = 0 }: {node: TreeNode;level?: number;}) => {
+  const TreeNodeView = ({ node, level = 0 }: { node: TreeNode; level?: number; }) => {
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = node.children.length > 0;
     const isSelected = selectedNode?.id === node.id;
@@ -109,268 +109,288 @@ export default function LeadersTree() {
     return (
       <div className="tree-node">
         <div
-          className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all duration-300 ${
-          isSelected ?
-          'bg-purple-100 border-2 border-purple-400 tree-node selected shadow-lg' :
-          'hover:bg-purple-50 border border-gray-200 hover:border-purple-200 interactive-hover'}`
-          }
+          className={`flex items-center gap-4 p-5 rounded-xl cursor-pointer transition-all duration-300 ${
+            isSelected
+              ? 'tree-node selected formal-shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300'
+              : 'hover:bg-blue-50/50 border border-gray-200 hover:border-blue-300 interactive-hover formal-card'
+          }`}
           style={{ marginRight: `${level * 24}px` }}
           onClick={() => {
             setSelectedNode(node);
             if (hasChildren) {
               toggleNode(node.id);
             }
-          }}>
-
-          {hasChildren &&
-          <div className="text-purple-600 transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-              <ChevronRight size={18} />
+          }}
+        >
+          {hasChildren && (
+            <div className="text-blue-600 transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+              <ChevronRight size={20} />
             </div>
-          }
+          )}
           
-          <div className={node.type === 'leader' ? 'crown-icon' : 'user-icon'}>
-            {node.type === 'leader' ? <Crown size={22} /> : <User size={20} />}
+          <div className={node.type === 'leader' ? 'crown-icon p-2 bg-yellow-100 rounded-lg' : 'user-icon p-2 bg-blue-100 rounded-lg'}>
+            {node.type === 'leader' ? <Crown size={24} /> : <User size={22} />}
           </div>
           
           <div className="flex-1 flex items-center justify-between">
-            <span className="font-semibold text-gray-800 text-lg">{node.name}</span>
-            <Badge variant="secondary" className="bg-purple-100 text-purple-700 font-medium">
-              <Vote size={14} className="mr-1" />
+            <div>
+              <span className="font-bold text-gray-800 text-xl">{node.name}</span>
+              <div className="text-sm formal-subtitle mt-1">
+                {node.type === 'leader' ? 'قائد انتخابي' : 'فرد تابع'}
+              </div>
+            </div>
+            <Badge className="formal-badge text-lg px-4 py-2">
+              <Vote size={16} className="mr-2" />
               {node.totalVotes} صوت
             </Badge>
           </div>
         </div>
 
-        {isExpanded && hasChildren &&
-        <div className="mt-2 relative">
+        {isExpanded && hasChildren && (
+          <div className="mt-3 relative">
             <div className="tree-connector"></div>
-            {node.children.map((child) =>
-          <div key={child.id} className="mb-2">
+            {node.children.map((child) => (
+              <div key={child.id} className="mb-3">
                 <TreeNodeView node={child} level={level + 1} />
               </div>
-          )}
+            ))}
           </div>
-        }
-      </div>);
-
+        )}
+      </div>
+    );
   };
 
   const NodeDetailsView = () => {
     if (!selectedNode) {
       return (
-        <Card className="sticky top-6">
-          <CardHeader className="text-center py-8">
-            <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-              <Users className="text-purple-600" size={32} />
+        <Card className="formal-card sticky top-6 formal-shadow-lg">
+          <CardHeader className="text-center py-12">
+            <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+              <Users className="text-blue-600" size={40} />
             </div>
-            <CardTitle className="text-xl">اختر عنصراً من الشجرة</CardTitle>
-            <CardDescription>انقر على أي قائد أو فرد لعرض تفاصيله الكاملة</CardDescription>
+            <CardTitle className="text-2xl formal-title">اختر عنصراً من الشجرة</CardTitle>
+            <CardDescription className="text-lg formal-subtitle">انقر على أي قائد أو فرد لعرض تفاصيله الكاملة</CardDescription>
           </CardHeader>
-        </Card>);
-
+        </Card>
+      );
     }
 
     return (
-      <Card className="sticky top-6">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${selectedNode.type === 'leader' ? 'bg-yellow-100' : 'bg-blue-100'}`}>
-              {selectedNode.type === 'leader' ?
-              <Crown className="text-yellow-600" size={24} /> :
-
-              <User className="text-blue-600" size={24} />
+      <Card className="formal-card sticky top-6 formal-shadow-lg">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-xl ${selectedNode.type === 'leader' ? 'bg-yellow-100' : 'bg-blue-100'}`}>
+              {selectedNode.type === 'leader' ? 
+                <Crown className="text-yellow-600" size={28} /> :
+                <User className="text-blue-600" size={28} />
               }
             </div>
             <div>
-              <CardTitle className="text-xl">
+              <CardTitle className="text-2xl formal-title">
                 {selectedNode.type === 'leader' ? 'تفاصيل القائد' : 'تفاصيل الفرد'}
               </CardTitle>
-              <CardDescription>{selectedNode.name}</CardDescription>
+              <CardDescription className="text-lg formal-subtitle">{selectedNode.name}</CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {selectedNode.details.phone &&
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <Phone className="text-green-600" size={20} />
+        <CardContent className="space-y-5">
+          {selectedNode.details.phone && (
+            <div className="flex items-center gap-4 p-4 bg-green-50 rounded-xl border border-green-200">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Phone className="text-green-600" size={22} />
+              </div>
               <div>
-                <div className="font-medium text-gray-700">الهاتف</div>
-                <div className="text-gray-900">{selectedNode.details.phone}</div>
+                <div className="font-semibold text-gray-700">الهاتف</div>
+                <div className="text-gray-900 font-mono">{selectedNode.details.phone}</div>
               </div>
             </div>
-          }
+          )}
           
-          {selectedNode.details.address &&
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <MapPin className="text-red-600" size={20} />
+          {selectedNode.details.address && (
+            <div className="flex items-center gap-4 p-4 bg-red-50 rounded-xl border border-red-200">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <MapPin className="text-red-600" size={22} />
+              </div>
               <div>
-                <div className="font-medium text-gray-700">السكن</div>
+                <div className="font-semibold text-gray-700">السكن</div>
                 <div className="text-gray-900">{selectedNode.details.address}</div>
               </div>
             </div>
-          }
+          )}
           
-          {selectedNode.details.work &&
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <Briefcase className="text-blue-600" size={20} />
+          {selectedNode.details.work && (
+            <div className="flex items-center gap-4 p-4 bg-purple-50 rounded-xl border border-purple-200">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Briefcase className="text-purple-600" size={22} />
+              </div>
               <div>
-                <div className="font-medium text-gray-700">العمل</div>
+                <div className="font-semibold text-gray-700">العمل</div>
                 <div className="text-gray-900">{selectedNode.details.work}</div>
               </div>
             </div>
-          }
+          )}
           
-          {selectedNode.details.votingCenter &&
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <Home className="text-purple-600" size={20} />
+          {selectedNode.details.votingCenter && (
+            <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Home className="text-blue-600" size={22} />
+              </div>
               <div>
-                <div className="font-medium text-gray-700">المركز الانتخابي</div>
+                <div className="font-semibold text-gray-700">المركز الانتخابي</div>
                 <div className="text-gray-900">{selectedNode.details.votingCenter}</div>
               </div>
             </div>
-          }
+          )}
 
           <Separator />
           
-          <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Vote className="text-purple-600" size={20} />
-              <span className="font-semibold text-purple-700">إجمالي الأصوات</span>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+            <div className="flex items-center gap-3 mb-3">
+              <Vote className="text-blue-600" size={24} />
+              <span className="font-bold text-blue-700 text-lg">إجمالي الأصوات</span>
             </div>
-            <div className="text-3xl font-bold text-purple-800">{selectedNode.totalVotes}</div>
+            <div className="text-4xl font-bold text-blue-800">{selectedNode.totalVotes}</div>
           </div>
 
-          {selectedNode.type === 'leader' && selectedNode.children.length > 0 &&
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="text-blue-600" size={20} />
-                <span className="font-semibold text-blue-700">عدد الأفراد</span>
+          {selectedNode.type === 'leader' && selectedNode.children.length > 0 && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+              <div className="flex items-center gap-3 mb-3">
+                <Users className="text-green-600" size={24} />
+                <span className="font-bold text-green-700 text-lg">عدد الأفراد</span>
               </div>
-              <div className="text-2xl font-bold text-blue-800">{selectedNode.children.length}</div>
+              <div className="text-3xl font-bold text-green-800">{selectedNode.children.length}</div>
             </div>
-          }
+          )}
         </CardContent>
-      </Card>);
-
+      </Card>
+    );
   };
 
-  const StatsView = () =>
-  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <Crown size={24} />
-            <div>
-              <div className="text-sm opacity-90">إجمالي القادة</div>
-              <div className="text-2xl font-bold">{stats.totalLeaders}</div>
-            </div>
+  const StatsView = () => (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="stats-card p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-100 rounded-xl">
+            <Crown size={28} className="text-blue-600" />
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <Users size={24} />
-            <div>
-              <div className="text-sm opacity-90">إجمالي الأفراد</div>
-              <div className="text-2xl font-bold">{stats.totalPersons}</div>
-            </div>
+          <div>
+            <div className="text-sm formal-subtitle font-medium">إجمالي القادة</div>
+            <div className="text-2xl font-bold formal-title">{stats.totalLeaders}</div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <Vote size={24} />
-            <div>
-              <div className="text-sm opacity-90">إجمالي الأصوات</div>
-              <div className="text-2xl font-bold">{stats.totalVotes}</div>
-            </div>
+      <div className="stats-card p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-green-100 rounded-xl">
+            <Users size={28} className="text-green-600" />
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <BarChart3 size={24} />
-            <div>
-              <div className="text-sm opacity-90">متوسط أصوات/قائد</div>
-              <div className="text-2xl font-bold">{stats.avgVotesPerLeader}</div>
-            </div>
+          <div>
+            <div className="text-sm formal-subtitle font-medium">إجمالي الأفراد</div>
+            <div className="text-2xl font-bold formal-title">{stats.totalPersons}</div>
           </div>
-        </CardContent>
-      </Card>
-    </div>;
+        </div>
+      </div>
 
+      <div className="stats-card p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-purple-100 rounded-xl">
+            <Vote size={28} className="text-purple-600" />
+          </div>
+          <div>
+            <div className="text-sm formal-subtitle font-medium">إجمالي الأصوات</div>
+            <div className="text-2xl font-bold formal-title">{stats.totalVotes}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="stats-card p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-orange-100 rounded-xl">
+            <BarChart3 size={28} className="text-orange-600" />
+          </div>
+          <div>
+            <div className="text-sm formal-subtitle font-medium">متوسط أصوات/قائد</div>
+            <div className="text-2xl font-bold formal-title">{stats.avgVotesPerLeader}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
+      <div className="formal-bg min-h-screen p-6">
         <div className="container mx-auto">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
-              <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-lg text-gray-600">جارٍ تحميل البيانات...</p>
+              <div className="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-6"></div>
+              <p className="text-xl formal-subtitle">جارٍ تحميل البيانات...</p>
             </div>
           </div>
         </div>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 pt-4" dir="rtl">
+    <div className="formal-bg min-h-screen pt-6" dir="rtl">
       <div className="container mx-auto p-6">
         {/* العنوان الرئيسي */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+        <div className="formal-card rounded-2xl p-8 mb-8 text-center animate-fade-in-up">
+          <div className="inline-flex items-center justify-center w-20 h-20 official-logo rounded-full mb-6">
+            <Shield className="text-white" size={40} />
+          </div>
+          <h1 className="text-5xl font-bold formal-title mb-4">
             العرض الشجري للقادة والأفراد
           </h1>
-          <p className="text-lg text-gray-600">مكتب النائب عمار جار الله</p>
-          <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-blue-500 mx-auto mt-4"></div>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <Badge className="formal-badge text-lg px-4 py-2">
+              <Building size={18} className="ml-2" />
+              مكتب النائب عمار جار الله
+            </Badge>
+          </div>
+          <div className="formal-divider"></div>
         </div>
 
         {/* الإحصائيات */}
         <StatsView />
 
         {/* المحتوى الرئيسي */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* عمود الشجرة */}
           <div className="lg:col-span-2">
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-2xl">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Crown className="text-purple-600" size={24} />
+            <Card className="formal-card formal-shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-4 text-3xl formal-title">
+                  <div className="p-3 bg-blue-100 rounded-xl">
+                    <Crown className="text-blue-600" size={32} />
                   </div>
                   الهيكل التنظيمي
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-lg formal-subtitle">
                   انقر على القادة لتوسيع قائمة الأفراد التابعين لهم
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 max-h-[700px] overflow-y-auto custom-scrollbar">
-                  {tree.length === 0 ?
-                  <div className="text-center py-12">
-                      <Users className="mx-auto text-gray-400 mb-4" size={48} />
-                      <p className="text-gray-500 text-lg">لا توجد بيانات متاحة</p>
+                <div className="space-y-4 max-h-[700px] overflow-y-auto custom-scrollbar">
+                  {tree.length === 0 ? (
+                    <div className="text-center py-16">
+                      <Users className="mx-auto text-gray-400 mb-6" size={64} />
+                      <p className="text-gray-500 text-xl mb-6">لا توجد بيانات متاحة</p>
                       <Button
-                      variant="outline"
-                      onClick={fetchTreeData}
-                      className="mt-4">
-
+                        variant="outline"
+                        onClick={fetchTreeData}
+                        className="btn-formal"
+                      >
                         إعادة تحميل
                       </Button>
-                    </div> :
-
-                  tree.map((node) =>
-                  <TreeNodeView key={node.id} node={node} />
-                  )
-                  }
+                    </div>
+                  ) : (
+                    tree.map((node) => (
+                      <TreeNodeView key={node.id} node={node} />
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -383,11 +403,11 @@ export default function LeadersTree() {
         </div>
 
         {/* أزرار التحكم */}
-        <div className="flex justify-center gap-4 mt-8">
+        <div className="flex justify-center gap-6 mt-8">
           <Button
             onClick={fetchTreeData}
-            className="bg-purple-600 hover:bg-purple-700">
-
+            className="btn-formal px-8 py-3 text-lg"
+          >
             إعادة تحميل البيانات
           </Button>
           <Button
@@ -399,18 +419,20 @@ export default function LeadersTree() {
                 return acc;
               }, []);
               setExpandedNodes(new Set(allNodeIds));
-            }}>
-
+            }}
+            className="formal-shadow px-8 py-3 text-lg border-2 border-blue-200 hover:border-blue-400"
+          >
             توسيع الكل
           </Button>
           <Button
             variant="outline"
-            onClick={() => setExpandedNodes(new Set())}>
-
+            onClick={() => setExpandedNodes(new Set())}
+            className="formal-shadow px-8 py-3 text-lg border-2 border-red-200 hover:border-red-400"
+          >
             طي الكل
           </Button>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

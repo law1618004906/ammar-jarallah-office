@@ -20,12 +20,12 @@ async function login(username, password) {
     OrderByField: "ID",
     IsAsc: false,
     Filters: [
-      {
-        name: "Email",
-        op: "Equal",
-        value: username
-      }
-    ]
+    {
+      name: "Email",
+      op: "Equal",
+      value: username
+    }]
+
   });
 
   if (error) {
@@ -33,14 +33,14 @@ async function login(username, password) {
   }
 
   const users = data?.List || [];
-  
+
   if (users.length === 0) {
     throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة');
   }
 
   // For demo purposes, accept any password for database users
   const user = users[0];
-  
+
   return {
     success: true,
     user: {
