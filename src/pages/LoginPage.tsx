@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Crown, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -13,6 +14,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,12 +25,10 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // محاكاة تسجيل الدخول
-      if (username === 'فقار' && password === '123456' ||
-      username === 'admin' && password === 'admin123') {
-        navigate('/leaders-tree', { replace: true });
-      } else {
-        alert('بيانات الاعتماد غير صحيحة');
+      const ok = await login(username, password);
+      if (ok) {
+        const dest = (location.state as any)?.from?.pathname || '/leaders-tree';
+        navigate(dest, { replace: true });
       }
     } finally {
       setLoading(false);

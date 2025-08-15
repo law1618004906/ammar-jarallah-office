@@ -22,6 +22,7 @@ export function AuthProvider({ children }: {children: ReactNode;}) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const LOCAL_KEY = 'auth_user';
 
   useEffect(() => {
     checkAuth();
@@ -29,19 +30,31 @@ export function AuthProvider({ children }: {children: ReactNode;}) {
 
   const checkAuth = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "checkAuth",
-        param: []
-      });
+      // 1) جرّب EasySite API إن وجد
+      if (window?.ezsite?.apis?.run) {
+        const { data, error } = await window.ezsite.apis.run({
+          path: "checkAuth",
+          param: []
+        });
+        if (!error && data?.authenticated && data?.user) {
+          setUser(data.user);
+          return;
+        }
+      }
 
-      if (error || !data?.authenticated) {
-        setUser(null);
+      // 2) فولباك: جلسة محلية
+      const raw = localStorage.getItem(LOCAL_KEY);
+      if (raw) {
+        const u = JSON.parse(raw) as User;
+        setUser(u);
       } else {
-        setUser(data.user);
+        setUser(null);
       }
     } catch (error) {
       console.error('Auth check failed:', error);
-      setUser(null);
+      // فولباك محلي عند الفشل
+      const raw = localStorage.getItem(LOCAL_KEY);
+      setUser(raw ? (JSON.parse(raw) as User) : null);
     } finally {
       setLoading(false);
     }
@@ -49,55 +62,50 @@ export function AuthProvider({ children }: {children: ReactNode;}) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "login",
-        param: [username, password]
-      });
-
-      if (error) {
-        toast({
-          title: "خطأ في تسجيل الدخول",
-          description: error,
-          variant: "destructive"
+      // 1) محاولة عبر EasySite API
+      if (window?.ezsite?.apis?.run) {
+        const { data, error } = await window.ezsite.apis.run({
+          path: "login",
+          param: [username, password]
         });
-        return false;
+        if (!error && data?.success && data?.user) {
+          setUser(data.user);
+          localStorage.setItem(LOCAL_KEY, JSON.stringify(data.user));
+          toast({ title: "مرحباً بك", description: `أهلاً وسهلاً ${data.user.name || data.user.username}` });
+          return true;
+        }
       }
 
-      if (data?.success && data?.user) {
-        setUser(data.user);
-        toast({
-          title: "مرحباً بك",
-          description: `أهلاً وسهلاً ${data.user.name || data.user.username}`
-        });
+      // 2) فولباك: حساب المدير الثابت محلياً
+      const fixedOk = (username === 'فقار' && password === '123456');
+      if (fixedOk) {
+        const fixedUser: User = { id: 'local-admin', username: 'فقار', name: 'فقار', role: 'admin' };
+        setUser(fixedUser);
+        localStorage.setItem(LOCAL_KEY, JSON.stringify(fixedUser));
+        toast({ title: "مرحباً بك", description: `أهلاً وسهلاً ${fixedUser.name}` });
         return true;
       }
 
+      toast({ title: "بيانات غير صحيحة", description: "اسم المستخدم أو كلمة المرور غير صحيحة", variant: 'destructive' });
       return false;
     } catch (error) {
       console.error('Login failed:', error);
-      toast({
-        title: "خطأ في الاتصال",
-        description: "حدث خطأ أثناء تسجيل الدخول",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ في الاتصال", description: "تعذّر تسجيل الدخول حالياً", variant: "destructive" });
       return false;
     }
   };
 
   const logout = async () => {
     try {
-      await window.ezsite.apis.run({
-        path: "logout",
-        param: []
-      });
+      if (window?.ezsite?.apis?.run) {
+        await window.ezsite.apis.run({ path: "logout", param: [] });
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {
+      localStorage.removeItem(LOCAL_KEY);
       setUser(null);
-      toast({
-        title: "تم تسجيل الخروج",
-        description: "إلى اللقاء!"
-      });
+      toast({ title: "تم تسجيل الخروج", description: "إلى اللقاء!" });
     }
   };
 
