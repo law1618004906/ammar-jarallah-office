@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Crown, Home, TreePine, BarChart3, Users, User, LogIn, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
 
 interface NavItem {
   icon: React.ElementType;
@@ -22,6 +23,7 @@ const navItems: NavItem[] = [
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   return (
     <header className="formal-header sticky top-0 z-50">
@@ -74,15 +76,27 @@ export default function Header() {
 
           {/* أزرار العمل */}
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/login')}
-              className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold">
-
-              <LogIn size={18} />
-              <span className="hidden sm:inline">تسجيل الدخول</span>
-            </Button>
+            {user ? (
+              <>
+                <span className="text-white/90 hidden sm:inline">مرحبا، {user.name || user.username}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={logout}
+                  className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold">
+                  تسجيل الخروج
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/login')}
+                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold">
+                <LogIn size={18} />
+                <span className="hidden sm:inline">تسجيل الدخول</span>
+              </Button>
+            )}
           </div>
         </div>
 
