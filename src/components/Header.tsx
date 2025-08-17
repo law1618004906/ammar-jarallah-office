@@ -23,7 +23,11 @@ const navItems: NavItem[] = [
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshAuth, loading } = useAuth();
+  
+  // Debug logging
+  console.log('Header render - user:', user, 'loading:', loading);
+  console.log('localStorage auth_user:', localStorage.getItem('auth_user'));
 
   return (
     <header className="formal-header sticky top-0 z-50">
@@ -76,27 +80,60 @@ export default function Header() {
 
           {/* أزرار العمل */}
           <div className="flex items-center gap-3">
-            {user ? (
-              <>
-                <span className="text-white/90 hidden sm:inline">مرحبا، {user.name || user.username}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={logout}
-                  className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold">
-                  تسجيل الخروج
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/login')}
-                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold">
-                <LogIn size={18} />
-                <span className="hidden sm:inline">تسجيل الدخول</span>
-              </Button>
-            )}
+            {(() => {
+              // Force check localStorage directly in render
+              const rawUser = localStorage.getItem('auth_user');
+              let currentUser = user;
+              
+              if (!currentUser && rawUser && rawUser !== 'null') {
+                try {
+                  const parsed = JSON.parse(rawUser);
+                  if (parsed && parsed.id && parsed.username) {
+                    currentUser = parsed;
+                  }
+                } catch (e) {
+                  console.error('Parse error:', e);
+                }
+              }
+              
+              if (loading) {
+                return <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full"></div>;
+              } else if (currentUser) {
+                return (
+                  <>
+                    <span className="text-white/90 hidden sm:inline">مرحبا، {currentUser.name || currentUser.username}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={logout}
+                      className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold">
+                      <User size={18} />
+                      تسجيل الخروج
+                    </Button>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={refreshAuth}
+                      className="flex items-center gap-2 bg-yellow-500/20 backdrop-blur-sm border-yellow-400/30 text-yellow-200 hover:bg-yellow-400 hover:text-yellow-900 transition-all duration-300 font-semibold">
+                      تحديث
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/login')}
+                      className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-blue-700 transition-all duration-300 font-semibold">
+                      <LogIn size={18} />
+                      <span className="hidden sm:inline">تسجيل الدخول</span>
+                    </Button>
+                  </>
+                );
+              }
+            })()}
           </div>
         </div>
 
