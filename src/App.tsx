@@ -3,17 +3,21 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import HomePage from "./pages/HomePage";
-import LeadersTree from "./pages/LeadersTree";
-import Dashboard from "./pages/Dashboard";
-import LeadersManagement from "./pages/LeadersManagement";
-import IndividualsManagement from "./pages/IndividualsManagement";
 import LoginPage from "./pages/LoginPage";
-import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useAuth } from "./hooks/useAuth";
+import LoadingSpinner from "./components/LoadingSpinner";
+
+// Lazy load heavy components
+const LeadersTree = lazy(() => import("./pages/LeadersTree"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const LeadersManagement = lazy(() => import("./pages/LeadersManagement"));
+const IndividualsManagement = lazy(() => import("./pages/IndividualsManagement"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -26,14 +30,18 @@ function AppContent() {
     if (loading) {
       return (
         <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+          <LoadingSpinner size="lg" text="جارٍ التحقق من الهوية..." />
         </div>
       );
     }
     if (!user) {
       return <Navigate to="/login" state={{ from: location }} replace />;
     }
-    return <>{children}</>;
+    return (
+      <Suspense fallback={<LoadingSpinner size="lg" text="جارٍ تحميل الصفحة..." />}>
+        {children}
+      </Suspense>
+    );
   }
 
   return (
