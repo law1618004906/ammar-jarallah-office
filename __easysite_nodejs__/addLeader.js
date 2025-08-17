@@ -1,29 +1,27 @@
+const dbManager = require('./unified-database-manager');
 
-async function addLeader(leaderData) {
+module.exports = async function addLeader(leaderData) {
   try {
-    const { data, error } = await ezsite.api.tableCreate('election_people', {
-      full_name: leaderData.full_name || '',
-      person_type: 'LEADER',
-      residence: leaderData.residence || '',
-      phone: leaderData.phone || '',
-      workplace: leaderData.workplace || '',
-      center_info: leaderData.center_info || '',
-      station_number: leaderData.station_number || '',
-      votes_count: leaderData.votes_count || 0,
-      leader_id: null,
-      created_by: 'admin',
-      status: 'ACTIVE'
-    });
-
-    if (error) {
-      throw new Error(`خطأ في إضافة القائد: ${error}`);
+    console.log('➕ إضافة قائد جديد:', leaderData);
+    
+    // التحقق من صحة البيانات
+    if (!leaderData.full_name || !leaderData.phone) {
+      return {
+        data: null,
+        error: 'الاسم الكامل ورقم الهاتف مطلوبان'
+      };
     }
-
+    
+    // إضافة القائد باستخدام مدير قاعدة البيانات الموحدة
+    const result = await dbManager.addLeader(leaderData);
+    
+    console.log('✅ تم إضافة القائد بنجاح:', result);
+    
     // Log the operation to audit table
     await ezsite.api.tableCreate('election_audit', {
       operation: 'CREATE',
       table_name: 'election_people',
-      record_id: data?.ID || 0,
+      record_id: result?.ID || 0,
       user_id: 'admin',
       old_values: null,
       new_values: JSON.stringify({

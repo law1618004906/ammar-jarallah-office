@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { fastUpdateLeader } from '@/lib/fastStorage';
 
 interface LeaderFormData {
   id: number;
@@ -89,27 +90,30 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onLeaderUpdat
 
     setIsLoading(true);
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "updateLeader",
-        param: [formData]
+      console.log('🚀 بدء تعديل القائد:', formData);
+
+      // استخدام التخزين السريع فقط لمنع إعادة التحميل المستمر
+      const updatedLeader = fastUpdateLeader(formData.id, {
+        full_name: formData.full_name,
+        residence: formData.residence,
+        phone: formData.phone,
+        workplace: formData.workplace,
+        center_info: formData.center_info,
+        station_number: formData.station_number,
+        votes_count: formData.votes_count
       });
 
-      if (error) {
+      if (updatedLeader) {
         toast({
-          title: "خطأ في تعديل القائد",
-          description: error,
-          variant: "destructive"
+          title: "تم التعديل بنجاح",
+          description: "تم تعديل بيانات القائد بنجاح"
         });
-        return;
+
+        onClose();
+        onLeaderUpdated(formData);
+      } else {
+        throw new Error('فشل في تحديث البيانات');
       }
-
-      toast({
-        title: "تم التعديل بنجاح",
-        description: "تم تعديل بيانات القائد بنجاح"
-      });
-
-      onClose();
-      onLeaderUpdated(formData);
     } catch (error) {
       console.error('خطأ في تعديل القائد:', error);
       toast({

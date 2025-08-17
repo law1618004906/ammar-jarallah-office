@@ -1,57 +1,49 @@
+// نظام تسجيل الدخول الموحد
+const dbManager = require('./unified-database-manager');
 
-async function login(username, password) {
+module.exports = async function login(credentials) {
   try {
-    // Check for the main admin user first
-    if (username === 'فقار' && password === '123456') {
+    const { username, password } = credentials;
+    
+    console.log('🔐 محاولة تسجيل دخول للمستخدم:', username);
+    
+    // التحقق من صحة البيانات
+    if (!username || !password) {
       return {
-        success: true,
-        user: {
-          id: 'admin-root-permanent',
-          username: 'فقار',
-          name: 'فقار - المدير الرئيسي',
-          role: 'ADMIN'
-        }
+        data: null,
+        error: 'اسم المستخدم وكلمة المرور مطلوبان'
       };
     }
-
-    // Check users in unified database
-    const { data, error } = await ezsite.api.tablePage('election_users', {
-      PageNo: 1,
-      PageSize: 1,
-      OrderByField: "ID",
-      IsAsc: false,
-      Filters: [
-        {
-          name: "username",
-          op: "Equal",
-          value: username
-        }
-      ]
-    });
-
-    if (error) {
-      throw new Error('خطأ في التحقق من بيانات المستخدم');
+    
+    // استخدام مدير قاعدة البيانات الموحدة للمصادقة
+    const authResult = await dbManager.authenticateUser(username, password);
+    
+    if (authResult.success) {
+      console.log('✅ تم تسجيل الدخول بنجاح:', authResult.user.username);
+      
+      return {
+        data: {
+          user: authResult.user,
+          token: 'token_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+        },
+        error: null
+      };
+    } else {
+      console.log('❌ فشل في تسجيل الدخول:', authResult.error);
+      
+      return {
+        data: null,
+        error: authResult.error
+      };
     }
-
-    const users = data?.List || [];
-
-    if (users.length === 0) {
-      throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة');
-    }
-
-    // For demo purposes, accept any password for database users
-    const user = users[0];
-
-    return {
-      success: true,
-      user: {
-        id: user.ID,
-        username: user.username,
-        name: user.name || user.username,
-        role: user.role || 'USER'
-      }
-    };
+    
   } catch (error) {
+    console.error('💥 خطأ عام في تسجيل الدخول:', error);
+    
+    return {
+      data: null,
+      error: 'حدث خطأ في النظام'
+    };
     console.error('Login error:', error);
     throw error;
   }

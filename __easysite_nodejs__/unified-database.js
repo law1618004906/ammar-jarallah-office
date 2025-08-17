@@ -1,15 +1,12 @@
 // قاعدة بيانات موحدة لنظام إدارة البيانات الانتخابية
 // تصميم موحد يدعم القادة والأفراد مع علاقات هرمية
 
-// جدول المستخدمين للمصادقة
+// جدول المستخدمين للمصادقة (عمودين)
 const createUsersTable = async () => {
   try {
     const { error } = await ezsite.api.tableCreate('election_users', {
       username: 'admin',
-      email: 'admin@election.gov.iq',
-      name: 'مدير النظام',
-      role: 'ADMIN',
-      password_hash: 'hashed_password_here'
+      password: '123456' // كلمة المرور الافتراضية
     });
 
     if (error && !error.includes('already exists')) {
@@ -20,28 +17,46 @@ const createUsersTable = async () => {
   }
 };
 
-// جدول الأشخاص الموحد (يدعم القادة والأفراد)
-const createUnifiedPeopleTable = async () => {
+// جدول القادة (7 أعمدة)
+const createLeadersTable = async () => {
   try {
-    const { error } = await ezsite.api.tableCreate('election_people', {
-      full_name: 'اسم تجريبي',
-      person_type: 'LEADER', // LEADER, INDIVIDUAL
+    const { error } = await ezsite.api.tableCreate('election_leaders', {
+      full_name: 'اسم القائد',
       phone: '07900000000',
-      residence: 'بغداد',
-      workplace: 'جهة حكومية',
-      center_info: 'مركز انتخابي',
+      address: 'بغداد',
+      work: 'جهة حكومية',
+      voting_center: 'مركز انتخابي',
       station_number: '101',
-      votes_count: 0,
-      leader_id: null, // للأفراد فقط، يشير إلى القائد
-      created_by: 'admin',
-      status: 'ACTIVE'
+      votes_count: 0
     });
 
     if (error && !error.includes('already exists')) {
-      console.error('خطأ في إنشاء جدول الأشخاص الموحد:', error);
+      console.error('خطأ في إنشاء جدول القادة:', error);
     }
   } catch (error) {
-    console.error('خطأ في إنشاء جدول الأشخاص الموحد:', error);
+    console.error('خطأ في إنشاء جدول القادة:', error);
+  }
+};
+
+// جدول الأفراد (8 أعمدة)
+const createPersonsTable = async () => {
+  try {
+    const { error } = await ezsite.api.tableCreate('election_persons', {
+      full_name: 'اسم الفرد',
+      phone: '07900000000',
+      address: 'بغداد',
+      work: 'جهة حكومية',
+      voting_center: 'مركز انتخابي',
+      station_number: '101',
+      leader_name: 'اسم القائد',
+      votes_count: 0
+    });
+
+    if (error && !error.includes('already exists')) {
+      console.error('خطأ في إنشاء جدول الأفراد:', error);
+    }
+  } catch (error) {
+    console.error('خطأ في إنشاء جدول الأفراد:', error);
   }
 };
 
@@ -91,7 +106,8 @@ async function initializeUnifiedDatabase() {
   console.log('بدء تهيئة قاعدة البيانات الموحدة...');
   
   await createUsersTable();
-  await createUnifiedPeopleTable();
+  await createLeadersTable();
+  await createPersonsTable();
   await createHierarchyTable();
   await createAuditTable();
   
@@ -102,7 +118,8 @@ async function initializeUnifiedDatabase() {
 module.exports = {
   initializeUnifiedDatabase,
   createUsersTable,
-  createUnifiedPeopleTable,
+  createLeadersTable,
+  createPersonsTable,
   createHierarchyTable,
   createAuditTable
 };

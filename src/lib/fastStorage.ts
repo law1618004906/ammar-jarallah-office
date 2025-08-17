@@ -136,6 +136,31 @@ export const fastUpdatePerson = (personId: number, updatedData: Partial<Person>)
   }
 };
 
+export const fastUpdateLeader = (leaderId: number, updatedData: Partial<Leader>): Leader | null => {
+  try {
+    const leaders = fastLoadLeaders();
+    const leaderIndex = leaders.findIndex(leader => leader.id === leaderId);
+    
+    if (leaderIndex === -1) {
+      return null;
+    }
+    
+    const updatedLeader: Leader = {
+      ...leaders[leaderIndex],
+      ...updatedData,
+      updated_at: new Date().toISOString().split('T')[0]
+    };
+    
+    leaders[leaderIndex] = updatedLeader;
+    fastSaveLeaders(leaders);
+    
+    return updatedLeader;
+  } catch (error) {
+    console.error('Fast update failed:', error);
+    return null;
+  }
+};
+
 // Fast delete operations
 export const fastDeleteLeader = (leaderId: number): boolean => {
   try {

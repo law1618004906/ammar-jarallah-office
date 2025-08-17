@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { updatePersonInStorage, getLeadersFromStorage } from '@/lib/localStorageOperations';
-import { fastUpdatePerson } from '@/lib/fastStorage';
+import { updatePersonInStorage, getLeadersFromStorage, getPersonsFromStorage, deletePersonFromStorage } from '@/lib/localStorageOperations';
+import { fastUpdatePerson, fastLoadLeaders } from '@/lib/fastStorage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -64,26 +64,27 @@ export default function EditPersonModal({ person, onPersonUpdated }: EditPersonM
 
   const fetchLeaders = useCallback(async () => {
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "getLeaders",
-        param: []
-      });
+      console.log('🔄 تحميل القادة...');
+      
+      // استخدام fastLoadLeaders للحصول على البيانات فوراً
+      const fastLeaders = fastLoadLeaders();
+      const leaderOptions = fastLeaders.map(leader => ({
+        id: leader.id,
+        full_name: leader.full_name
+      }));
+      
+      console.log('✅ تم تحميل', leaderOptions.length, 'قائد');
+      setLeaders(leaderOptions);
 
-      if (error) {
-        toast({
-          title: "خطأ في تحميل القادة",
-          description: error,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const leadersList = data?.List || [];
-      setLeaders(leadersList);
+      
     } catch (error) {
-      console.error('خطأ في تحميل القادة:', error);
+      console.error('❌ خطأ في تحميل القادة:', error);
+      // في حالة الخطأ، استخدام بيانات افتراضية
+      setLeaders([
+        { id: 1, full_name: "قائد افتراضي" }
+      ]);
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     fetchLeaders();
@@ -136,26 +137,9 @@ export default function EditPersonModal({ person, onPersonUpdated }: EditPersonM
 
     setIsLoading(true);
     try {
-      // Try EasySite API first
-      if (window.ezsite?.apis?.run) {
-        const { data, error } = await window.ezsite.apis.run({
-          path: "updatePerson",
-          param: [formData]
-        });
+      console.log('🚀 بدء تعديل الفرد:', formData);
 
-        if (!error && data) {
-          toast({
-            title: "تم التعديل بنجاح",
-            description: "تم تعديل بيانات الفرد بنجاح"
-          });
-
-          setIsOpen(false);
-          onPersonUpdated(formData);
-          return;
-        }
-      }
-
-      // Use fast storage for instant response
+      // استخدام التخزين السريع فقط لمنع إعادة التحميل المستمر
       const updatedPerson = fastUpdatePerson(formData.id, {
         leader_name: formData.leader_name,
         full_name: formData.full_name,

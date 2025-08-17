@@ -1,11 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Crown, User, ChevronRight, ChevronDown, Phone, MapPin, Briefcase, Vote, Users, BarChart3, Home, Shield, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { fastLoadPersons, fastLoadLeaders } from '@/lib/fastStorage';
+import { Person, Leader } from '@/lib/localStorageOperations';
 
 interface TreeNode {
   id: string;
@@ -42,128 +44,106 @@ export default function LeadersTree() {
   });
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchTreeData();
+  const buildTreeFromData = useCallback((persons: Person[], leaders: Leader[]): { tree: TreeNode[], stats: StatsData } => {
+    console.log('🌳 LeadersTree: بناء الشجرة من البيانات المحلية...');
+    
+    const treeNodes: TreeNode[] = leaders.map(leader => {
+      const leaderPersons = persons.filter(p => p.leader_name === leader.full_name);
+      
+      const children: TreeNode[] = leaderPersons.map(person => ({
+        id: `person-${person.id}`,
+        name: person.full_name,
+        type: 'person' as const,
+        totalVotes: 1, // افتراضي: كل فرد = صوت واحد
+        details: {
+          phone: person.phone,
+          address: (person as any).address || 'غير محدد',
+          work: (person as any).work || 'غير محدد',
+          votingCenter: (person as any).voting_center || 'غير محدد',
+          stationNumber: (person as any).station_number || 'غير محدد'
+        },
+        children: []
+      }));
+      
+      return {
+        id: `leader-${leader.id}`,
+        name: leader.full_name,
+        type: 'leader' as const,
+        totalVotes: children.length, // عدد الأفراد التابعين
+        details: {
+          phone: leader.phone,
+          address: (leader as any).address || 'غير محدد',
+          work: (leader as any).work || 'غير محدد',
+          votingCenter: (leader as any).voting_center || 'غير محدد',
+          stationNumber: (leader as any).station_number || 'غير محدد'
+        },
+        children
+      };
+    });
+    
+    const stats: StatsData = {
+      totalLeaders: leaders.length,
+      totalPersons: persons.length,
+      totalVotes: persons.length + leaders.length,
+      avgVotesPerLeader: leaders.length > 0 ? Math.round(persons.length / leaders.length) : 0
+    };
+    
+    console.log('✅ LeadersTree: تم بناء الشجرة بنجاح:', {
+      leaders: leaders.length,
+      persons: persons.length,
+      treeNodes: treeNodes.length
+    });
+    
+    return { tree: treeNodes, stats };
   }, []);
 
-  const fetchTreeData = async () => {
+  const loadTreeDataCallback = useCallback(() => {
+    console.log('🚀 LeadersTree: بدء تحميل بيانات الشجرة...');
+    
     try {
-      setLoading(true);
+      // استخدام التخزين السريع للحصول على البيانات فوراً
+      const fastPersons = fastLoadPersons();
+      const fastLeaders = fastLoadLeaders();
       
-      // Check if EasySite API is available
+      console.log('📊 LeadersTree: تم تحميل البيانات السريعة:', {
+        persons: fastPersons.length,
+        leaders: fastLeaders.length
+      });
+      
+      // بناء الشجرة من البيانات المحلية
+      const { tree: builtTree, stats: calculatedStats } = buildTreeFromData(fastPersons, fastLeaders);
+      setTree(builtTree);
+      setStats(calculatedStats);
+      setLoading(false);
+      
+      console.log('✅ LeadersTree: تم تحميل الشجرة بنجاح');
+      
+      // تحديث اختياري من API في الخلفية
       if (window?.ezsite?.apis?.run) {
-        const { data, error } = await window.ezsite.apis.run({
+        window.ezsite.apis.run({
           path: "getLeadersTree",
           param: []
+        }).then(({ data, error }) => {
+          if (!error && data) {
+            console.log('🔄 LeadersTree: تم تحديث البيانات من API');
+            setTree(data.tree || builtTree);
+            setStats(data.stats || calculatedStats);
+          }
+        }).catch(error => {
+          console.log('⚠️ LeadersTree: فشل تحديث API، استمرار بالبيانات المحلية');
         });
-
-        if (!error && data) {
-          setTree(data.tree || []);
-          setStats(data.stats || {
-            totalLeaders: 0,
-            totalPersons: 0,
-            totalVotes: 0,
-            avgVotesPerLeader: 0
-          });
-          return;
-        }
       }
-
-      // Fallback: Use mock data for production
-      console.log('Using mock data for leaders tree');
-      const mockTree: TreeNode[] = [
-        {
-          id: "leader-1",
-          name: "أحمد محمد علي الحسني",
-          type: "leader",
-          totalVotes: 320,
-          details: {
-            phone: "07901234567",
-            address: "حي الجادرية - بغداد",
-            work: "وزارة التربية",
-            votingCenter: "مركز الجادرية الانتخابي",
-            stationNumber: "101"
-          },
-          children: [
-            {
-              id: "person-1-1",
-              name: "سارة أحمد محمد الكريم",
-              type: "person",
-              totalVotes: 45,
-              details: {
-                phone: "07801234567",
-                address: "حي الجادرية - بغداد",
-                work: "مدرسة الجادرية الابتدائية",
-                votingCenter: "مركز الجادرية الانتخابي",
-                stationNumber: "101"
-              },
-              children: []
-            },
-            {
-              id: "person-1-2",
-              name: "محمد علي حسن الموسوي",
-              type: "person",
-              totalVotes: 38,
-              details: {
-                phone: "07812345678",
-                address: "حي الجادرية - بغداد",
-                work: "مستشفى الجادرية العام",
-                votingCenter: "مركز الجادرية الانتخابي",
-                stationNumber: "101"
-              },
-              children: []
-            }
-          ]
-        },
-        {
-          id: "leader-2",
-          name: "فاطمة حسن محمود الزهراء",
-          type: "leader",
-          totalVotes: 285,
-          details: {
-            phone: "07912345678",
-            address: "حي الكرادة - بغداد",
-            work: "جامعة بغداد",
-            votingCenter: "مركز الكرادة الانتخابي",
-            stationNumber: "205"
-          },
-          children: [
-            {
-              id: "person-2-1",
-              name: "زينب محمد عبدالله النجار",
-              type: "person",
-              totalVotes: 42,
-              details: {
-                phone: "07823456789",
-                address: "حي الكرادة - بغداد",
-                work: "شركة التوزيع الكهربائية",
-                votingCenter: "مركز الكرادة الانتخابي",
-                stationNumber: "205"
-              },
-              children: []
-            }
-          ]
-        }
-      ];
-
-      const mockStats: StatsData = {
-        totalLeaders: 2,
-        totalPersons: 3,
-        totalVotes: 730,
-        avgVotesPerLeader: 365
-      };
-
-      setTree(mockTree);
-      setStats(mockStats);
+      
     } catch (error) {
-      console.error('خطأ في تحميل الشجرة:', error);
-      // Even on error, show mock data
-      const mockTree: TreeNode[] = [
+      console.error('❌ LeadersTree: خطأ في تحميل البيانات:', error);
+      
+      // بيانات احتياطية في حالة الخطأ
+      const fallbackTree: TreeNode[] = [
         {
-          id: "leader-1",
-          name: "قائد تجريبي",
+          id: "leader-fallback",
+          name: "قائد افتراضي",
           type: "leader",
-          totalVotes: 100,
+          totalVotes: 10,
           details: {
             phone: "07901234567",
             address: "بغداد",
@@ -172,17 +152,27 @@ export default function LeadersTree() {
           children: []
         }
       ];
-      setTree(mockTree);
-      setStats({
+      
+      const fallbackStats: StatsData = {
         totalLeaders: 1,
         totalPersons: 0,
-        totalVotes: 100,
-        avgVotesPerLeader: 100
-      });
-    } finally {
+        totalVotes: 10,
+        avgVotesPerLeader: 10
+      };
+      
+      setTree(fallbackTree);
+      setStats(fallbackStats);
       setLoading(false);
     }
-  };
+  }, [buildTreeFromData]);
+
+  useEffect(() => {
+    loadTreeDataCallback();
+  }, [loadTreeDataCallback]);
+
+  const fetchTreeData = useCallback(() => {
+    loadTreeDataCallback();
+  }, [loadTreeDataCallback]);
 
   const toggleNode = (nodeId: string) => {
     const newExpanded = new Set(expandedNodes);
@@ -473,7 +463,7 @@ export default function LeadersTree() {
                       <p className="text-gray-500 text-xl mb-6">لا توجد بيانات متاحة</p>
                       <Button
                       variant="outline"
-                      onClick={fetchTreeData}
+                      onClick={loadTreeDataCallback}
                       className="btn-formal">
 
                         إعادة تحميل
@@ -498,7 +488,7 @@ export default function LeadersTree() {
         {/* أزرار التحكم */}
         <div className="flex justify-center gap-6 mt-8">
           <Button
-            onClick={fetchTreeData}
+            onClick={loadTreeDataCallback}
             className="btn-formal px-8 py-3 text-lg">
 
             إعادة تحميل البيانات

@@ -1,6 +1,18 @@
+// إضافة فرد جديد إلى قاعدة البيانات الموحدة
+const dbManager = require('./unified-database-manager');
 
-async function addPerson(personData) {
+module.exports = async function addPerson(personData) {
   try {
+    console.log('➕ إضافة فرد جديد:', personData);
+    
+    // التحقق من صحة البيانات
+    if (!personData.full_name || !personData.phone) {
+      return {
+        data: null,
+        error: 'الاسم الكامل ورقم الهاتف مطلوبان'
+      };
+    }
+    
     // First, get the leader's ID from the leader name
     let leaderId = null;
     if (personData.leader_name) {

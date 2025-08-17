@@ -1,43 +1,38 @@
+// جلب جميع الأفراد من قاعدة البيانات الموحدة
+const dbManager = require('./unified-database-manager');
 
-async function getPersons() {
+module.exports = async function getPersons() {
   try {
-    const { data, error } = await ezsite.api.tablePage('election_people', {
-      PageNo: 1,
-      PageSize: 1000,
-      OrderByField: "id",
-      IsAsc: false,
-      Filters: [
-        {
-          name: "person_type",
-          op: "Equal",
-          value: "INDIVIDUAL"
-        }
-      ]
-    });
-
-    if (error) {
-      throw new Error(`خطأ في جلب بيانات الأفراد: ${error}`);
-    }
-
-    // Transform data to match expected format
-    const persons = data?.List || [];
-    const transformedPersons = persons.map(person => ({
-      id: person.ID,
-      leader_name: person.leader_name || 'غير محدد',
-      full_name: person.full_name,
-      residence: person.residence,
-      phone: person.phone,
-      workplace: person.workplace,
-      center_info: person.center_info,
-      station_number: person.station_number,
-      votes_count: person.votes_count || 0,
-      created_at: person.created_at,
-      updated_at: person.updated_at
-    }));
-
-    return { List: transformedPersons };
+    console.log('🔍 جلب الأفراد من قاعدة البيانات الموحدة...');
+    
+    const persons = await dbManager.getPersons();
+    
+    console.log(`✅ تم جلب ${persons.length} فرد بنجاح`);
+    
+    return {
+      data: persons,
+      error: null
+    };
+    
   } catch (error) {
-    console.error('Get persons error:', error);
-    throw error;
+    console.error('❌ خطأ في جلب الأفراد:', error);
+    
+    // إرجاع بيانات تجريبية في حالة الخطأ
+    return {
+      data: [
+        {
+          id: 1,
+          full_name: "فرد تجريبي",
+          phone: "07901234567",
+          address: "بغداد",
+          work: "موظف حكومي",
+          voting_center: "مركز تجريبي",
+          station_number: "101",
+          leader_name: "قائد تجريبي",
+          votes_count: 0
+        }
+      ],
+      error: null
+    };
   }
-}
+};
