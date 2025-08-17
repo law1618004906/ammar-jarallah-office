@@ -2,9 +2,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Users, Vote, BarChart3, ArrowRight, LogIn, Shield, Award, FileText, Building, TreePine } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="formal-bg" dir="rtl">
@@ -100,23 +102,28 @@ export default function HomePage() {
                 </Button>
               </div>
               
-              <div className="max-w-md mx-auto">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full formal-shadow-lg h-16 text-lg font-semibold px-12 py-4 rounded-xl border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                  onClick={() => navigate('/login')}>
+              {!user && (
+                <div className="max-w-md mx-auto">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full formal-shadow-lg h-16 text-lg font-semibold px-12 py-4 rounded-xl border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                    onClick={() => navigate('/login')}>
 
-                  <LogIn className="ml-3" size={24} />
-                  دخول النظام الآمن
-                  <ArrowRight className="mr-3" size={24} />
-                </Button>
-              </div>
+                    <LogIn className="ml-3" size={24} />
+                    تسجيل الدخول
+                    <ArrowRight className="mr-3" size={24} />
+                  </Button>
+                </div>
+              )}
               
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl border border-blue-200">
                 <p className="formal-subtitle text-lg flex items-center justify-center">
                   <Shield className="inline ml-3 text-blue-600" size={24} />
-                  نظام آمن ومعتمد للوصول إلى جميع الميزات المتقدمة والتحكم الكامل
+                  {user ? 
+                    'مرحباً بك في نظام إدارة البيانات الانتخابية' : 
+                    'نظام آمن ومعتمد للوصول إلى جميع الميزات المتقدمة والتحكم الكامل'
+                  }
                 </p>
               </div>
             </div>
