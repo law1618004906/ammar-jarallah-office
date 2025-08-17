@@ -94,14 +94,40 @@ export const fastAddPerson = (personData: Omit<Person, 'id' | 'created_at' | 'up
   const newPerson: Person = {
     ...personData,
     id: Date.now() + Math.floor(Math.random() * 1000),
-    created_at: new Date().toISOString().split('T')[0],
-    updated_at: new Date().toISOString().split('T')[0]
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   };
   
   persons.push(newPerson);
   fastSavePersons(persons);
   
   return newPerson;
+};
+
+// Fast update operations
+export const fastUpdatePerson = (personId: number, updatedData: Partial<Person>): Person | null => {
+  try {
+    const persons = fastLoadPersons();
+    const personIndex = persons.findIndex(person => person.id === personId);
+    
+    if (personIndex === -1) {
+      return null;
+    }
+    
+    const updatedPerson: Person = {
+      ...persons[personIndex],
+      ...updatedData,
+      updated_at: new Date().toISOString()
+    };
+    
+    persons[personIndex] = updatedPerson;
+    fastSavePersons(persons);
+    
+    return updatedPerson;
+  } catch (error) {
+    console.error('Fast update failed:', error);
+    return null;
+  }
 };
 
 // Fast delete operations

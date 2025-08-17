@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Users, Edit2, Crown } from 'lucide-react';
+import { updatePersonInStorage, getLeadersFromStorage } from '@/lib/localStorageOperations';
+import { fastUpdatePerson } from '@/lib/fastStorage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { Edit2, Crown } from 'lucide-react';
 
 interface PersonFormData {
   id: number;
@@ -134,27 +136,51 @@ export default function EditPersonModal({ person, onPersonUpdated }: EditPersonM
 
     setIsLoading(true);
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "updatePerson",
-        param: [formData]
-      });
-
-      if (error) {
-        toast({
-          title: "خطأ في تعديل الفرد",
-          description: error,
-          variant: "destructive"
+      // Try EasySite API first
+      if (window.ezsite?.apis?.run) {
+        const { data, error } = await window.ezsite.apis.run({
+          path: "updatePerson",
+          param: [formData]
         });
-        return;
+
+        if (!error && data) {
+          toast({
+            title: "تم التعديل بنجاح",
+            description: "تم تعديل بيانات الفرد بنجاح"
+          });
+
+          setIsOpen(false);
+          onPersonUpdated(formData);
+          return;
+        }
       }
 
-      toast({
-        title: "تم التعديل بنجاح",
-        description: "تم تعديل بيانات الفرد بنجاح"
+      // Use fast storage for instant response
+      const updatedPerson = fastUpdatePerson(formData.id, {
+        leader_name: formData.leader_name,
+        full_name: formData.full_name,
+        residence: formData.residence,
+        phone: formData.phone,
+        workplace: formData.workplace,
+        center_info: formData.center_info,
+        station_number: formData.station_number,
+        votes_count: formData.votes_count
       });
 
-      setIsOpen(false);
-      onPersonUpdated(formData);
+      if (updatedPerson) {
+        toast({
+          title: "تم التعديل بنجاح",
+          description: "تم تعديل بيانات الفرد بنجاح"
+        });
+
+        setIsOpen(false);
+        onPersonUpdated({
+          ...updatedPerson,
+          person_type: 'INDIVIDUAL' as const
+        });
+      } else {
+        throw new Error('فشل في تحديث البيانات');
+      }
     } catch (error) {
       console.error('خطأ في تعديل الفرد:', error);
       toast({

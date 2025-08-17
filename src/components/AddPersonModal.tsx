@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { addPersonToStorage, getLeadersFromStorage } from '@/lib/localStorageOperations';
+import { fastAddPerson } from '@/lib/fastStorage';
 
 interface PersonFormData {
   leader_name: string;
@@ -173,8 +174,8 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
         }
       }
 
-      // Fallback: Use localStorage
-      const newPerson = addPersonToStorage({
+      // Use fast storage for instant response
+      const newPerson = fastAddPerson({
         leader_name: formData.leader_name,
         full_name: formData.full_name,
         residence: formData.residence,
@@ -187,7 +188,7 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
 
       toast({
         title: "تمت الإضافة بنجاح",
-        description: "تم إضافة الفرد الجديد بنجاح (محفوظ محلياً)"
+        description: "تم إضافة الفرد الجديد بنجاح"
       });
 
       // Reset form
