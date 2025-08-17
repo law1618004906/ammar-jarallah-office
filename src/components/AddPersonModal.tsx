@@ -1,15 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { Users, Plus, Crown } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Plus, Users, Crown, Phone, MapPin, Briefcase, Building } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { addPersonToStorage, getLeadersFromStorage } from '@/lib/localStorageOperations';
-import { fastAddPerson } from '@/lib/fastStorage';
+import { Person } from '@/lib/localStorageOperations';
+import { fastAddPerson, fastLoadLeaders } from '@/lib/fastStorage';
 
 interface PersonFormData {
   leader_name: string;
@@ -50,45 +48,34 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
 
   const { toast } = useToast();
 
+  const fetchLeaders = useCallback(async () => {
+    try {
+      console.log('🔄 تحميل القادة...');
+      
+      // استخدام fastLoadLeaders للحصول على البيانات فوراً
+      const fastLeaders = fastLoadLeaders();
+      const leaderOptions = fastLeaders.map(leader => ({
+        id: leader.id,
+        full_name: leader.full_name
+      }));
+      
+      console.log('✅ تم تحميل', leaderOptions.length, 'قائد');
+      setLeaders(leaderOptions);
+      
+    } catch (error) {
+      console.error('❌ خطأ في تحميل القادة:', error);
+      // في حالة الخطأ، استخدام بيانات افتراضية
+      setLeaders([
+        { id: 1, full_name: "قائد افتراضي" }
+      ]);
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       fetchLeaders();
     }
-  }, [isOpen]);
-
-  const fetchLeaders = async () => {
-    try {
-      // Try EasySite API first
-      if (window?.ezsite?.apis?.run) {
-        const { data, error } = await window.ezsite.apis.run({
-          path: "getLeaders",
-          param: []
-        });
-
-        if (!error && data) {
-          setLeaders(data || []);
-          return;
-        }
-      }
-
-      // Fallback: Use localStorage data
-      const storedLeaders = getLeadersFromStorage();
-      const leaderOptions = storedLeaders.map(leader => ({
-        id: leader.id,
-        full_name: leader.full_name
-      }));
-      setLeaders(leaderOptions);
-    } catch (error) {
-      console.error('خطأ في تحميل القادة:', error);
-      // Even on error, use localStorage
-      const storedLeaders = getLeadersFromStorage();
-      const leaderOptions = storedLeaders.map(leader => ({
-        id: leader.id,
-        full_name: leader.full_name
-      }));
-      setLeaders(leaderOptions);
-    }
-  };
+  }, [isOpen, fetchLeaders]);
 
   const handleInputChange = (field: keyof PersonFormData, value: string | number) => {
     setFormData((prev) => ({
@@ -137,44 +124,9 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
 
     setIsLoading(true);
     try {
-      // Try EasySite API first
-      if (window?.ezsite?.apis?.run) {
-        const { data, error } = await window.ezsite.apis.run({
-          path: "addPerson",
-          param: [formData]
-        });
+      console.log('🚀 بدء إضافة فرد جديد:', formData);
 
-        if (!error) {
-          toast({
-            title: "تمت الإضافة بنجاح",
-            description: "تم إضافة الفرد الجديد بنجاح"
-          });
-
-          // Reset form
-          setFormData({
-            leader_name: '',
-            full_name: '',
-            person_type: 'INDIVIDUAL',
-            residence: '',
-            phone: '',
-            workplace: '',
-            center_info: '',
-            station_number: '',
-            votes_count: 0
-          });
-
-          setIsOpen(false);
-          if (data) {
-            onPersonAdded({
-              ...data,
-              person_type: 'INDIVIDUAL' as const
-            });
-          }
-          return;
-        }
-      }
-
-      // Use fast storage for instant response
+      // استخدام التخزين السريع فقط لمنع إعادة التحميل المستمر
       const newPerson = fastAddPerson({
         leader_name: formData.leader_name,
         full_name: formData.full_name,
@@ -186,9 +138,11 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
         votes_count: formData.votes_count
       });
 
+      console.log('✅ تم إضافة الفرد بنجاح:', newPerson);
+
       toast({
         title: "تمت الإضافة بنجاح",
-        description: "تم إضافة الفرد الجديد بنجاح"
+        description: `تم إضافة ${formData.full_name} بنجاح`
       });
 
       // Reset form
@@ -205,12 +159,28 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
       });
 
       setIsOpen(false);
+      
+      // تحديث فوري للواجهة بدون إعادة تحميل
       onPersonAdded({
         ...newPerson,
         person_type: 'INDIVIDUAL' as const
       });
+
+      // محاولة مزامنة مع API في الخلفية (اختيارية)
+      if (window?.ezsite?.apis?.run) {
+        try {
+          await window.ezsite.apis.run({
+            path: "addPerson",
+            param: [formData]
+          });
+          console.log('🔄 تم مزامنة البيانات مع API');
+        } catch (apiError) {
+          console.log('⚠️ فشل المزامنة مع API، البيانات محفوظة محلياً');
+        }
+      }
+
     } catch (error) {
-      console.error('خطأ في إضافة الفرد:', error);
+      console.error('❌ خطأ في إضافة الفرد:', error);
       toast({
         title: "خطأ في الإضافة",
         description: "حدث خطأ أثناء إضافة الفرد",
