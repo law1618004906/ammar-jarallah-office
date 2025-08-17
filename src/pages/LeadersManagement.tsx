@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import AddLeaderModal from '@/components/AddLeaderModal';
 import EditLeaderModal from '@/components/EditLeaderModal';
 import AddSampleDataButton from '@/components/AddSampleDataButton';
+import { getLeadersFromStorage, deleteLeaderFromStorage, initializeDefaultData } from '@/lib/localStorageOperations';
 
 interface Leader {
   id: number;
@@ -51,90 +52,18 @@ export default function LeadersManagement() {
         }
       }
 
-      // Fallback: Use mock data for production
-      console.log('Using mock data for leaders');
-      const mockLeaders: Leader[] = [
-        {
-          id: 1,
-          full_name: "أحمد محمد علي الحسني",
-          residence: "حي الجادرية - بغداد",
-          phone: "07901234567",
-          workplace: "وزارة التربية",
-          center_info: "مركز الجادرية الانتخابي",
-          station_number: "101",
-          votes_count: 320,
-          created_at: "2024-01-15",
-          updated_at: "2024-01-20"
-        },
-        {
-          id: 2,
-          full_name: "فاطمة حسن محمود الزهراء",
-          residence: "حي الكرادة - بغداد",
-          phone: "07912345678",
-          workplace: "جامعة بغداد",
-          center_info: "مركز الكرادة الانتخابي",
-          station_number: "205",
-          votes_count: 285,
-          created_at: "2024-01-16",
-          updated_at: "2024-01-21"
-        },
-        {
-          id: 3,
-          full_name: "محمد عبدالله سالم البصري",
-          residence: "حي الزعفرانية - بغداد",
-          phone: "07923456789",
-          workplace: "شركة النفط الوطنية",
-          center_info: "مركز الزعفرانية الانتخابي",
-          station_number: "312",
-          votes_count: 260,
-          created_at: "2024-01-17",
-          updated_at: "2024-01-22"
-        },
-        {
-          id: 4,
-          full_name: "زينب أحمد حسين الموسوي",
-          residence: "حي الشعلة - بغداد",
-          phone: "07934567890",
-          workplace: "مستشفى الكندي التعليمي",
-          center_info: "مركز الشعلة الانتخابي",
-          station_number: "418",
-          votes_count: 240,
-          created_at: "2024-01-18",
-          updated_at: "2024-01-23"
-        },
-        {
-          id: 5,
-          full_name: "علي محمد جاسم الكعبي",
-          residence: "حي الدورة - بغداد",
-          phone: "07945678901",
-          workplace: "دائرة الكمارك العامة",
-          center_info: "مركز الدورة الانتخابي",
-          station_number: "524",
-          votes_count: 220,
-          created_at: "2024-01-19",
-          updated_at: "2024-01-24"
-        }
-      ];
+      // Fallback: Use localStorage data for production
+      console.log('Using localStorage data for leaders');
+      initializeDefaultData(); // Initialize default data if needed
+      const storedLeaders = getLeadersFromStorage();
+      setLeaders(storedLeaders);
       
-      setLeaders(mockLeaders);
     } catch (error) {
       console.error('خطأ في تحميل القادة:', error);
-      // Even on error, show mock data
-      const mockLeaders: Leader[] = [
-        {
-          id: 1,
-          full_name: "أحمد محمد علي",
-          residence: "بغداد",
-          phone: "07901234567",
-          workplace: "موظف حكومي",
-          center_info: "مركز انتخابي",
-          station_number: "101",
-          votes_count: 150,
-          created_at: "2024-01-15",
-          updated_at: "2024-01-20"
-        }
-      ];
-      setLeaders(mockLeaders);
+      // Even on error, use localStorage
+      initializeDefaultData();
+      const storedLeaders = getLeadersFromStorage();
+      setLeaders(storedLeaders);
     } finally {
       setLoading(false);
     }
@@ -150,26 +79,38 @@ export default function LeadersManagement() {
 
   const handleDeleteLeader = async (leaderId: number, leaderName: string) => {
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "deleteLeader",
-        param: [leaderId]
-      });
-
-      if (error) {
-        toast({
-          title: "خطأ في حذف القائد",
-          description: error,
-          variant: "destructive"
+      // Try EasySite API first
+      if (window?.ezsite?.apis?.run) {
+        const { data, error } = await window.ezsite.apis.run({
+          path: "deleteLeader",
+          param: [leaderId]
         });
-        return;
+
+        if (!error) {
+          toast({
+            title: "تم الحذف بنجاح",
+            description: `تم حذف القائد ${leaderName} بنجاح`
+          });
+          fetchLeaders();
+          return;
+        }
       }
 
-      toast({
-        title: "تم الحذف بنجاح",
-        description: `تم حذف القائد ${leaderName} بنجاح`
-      });
-
-      fetchLeaders();
+      // Fallback: Use localStorage
+      const success = deleteLeaderFromStorage(leaderId);
+      if (success) {
+        toast({
+          title: "تم الحذف بنجاح",
+          description: `تم حذف القائد ${leaderName} بنجاح`
+        });
+        fetchLeaders();
+      } else {
+        toast({
+          title: "خطأ في الحذف",
+          description: "لم يتم العثور على القائد المحدد",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('خطأ في حذف القائد:', error);
       toast({

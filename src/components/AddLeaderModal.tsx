@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { addLeaderToStorage } from '@/lib/localStorageOperations';
 
 interface LeaderFormData {
   full_name: string;
@@ -77,23 +78,51 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
 
     setIsLoading(true);
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "addLeader",
-        param: [formData]
-      });
-
-      if (error) {
-        toast({
-          title: "خطأ في إضافة القائد",
-          description: error,
-          variant: "destructive"
+      // Try EasySite API first
+      if (window?.ezsite?.apis?.run) {
+        const { data, error } = await window.ezsite.apis.run({
+          path: "addLeader",
+          param: [formData]
         });
-        return;
+
+        if (!error) {
+          toast({
+            title: "تمت الإضافة بنجاح",
+            description: "تم إضافة القائد الجديد بنجاح"
+          });
+
+          // Reset form
+          setFormData({
+            full_name: '',
+            person_type: 'LEADER',
+            residence: '',
+            phone: '',
+            workplace: '',
+            center_info: '',
+            station_number: '',
+            votes_count: 0
+          });
+
+          setIsOpen(false);
+          onLeaderAdded();
+          return;
+        }
       }
+
+      // Fallback: Use localStorage
+      const newLeader = addLeaderToStorage({
+        full_name: formData.full_name,
+        residence: formData.residence,
+        phone: formData.phone,
+        workplace: formData.workplace,
+        center_info: formData.center_info,
+        station_number: formData.station_number,
+        votes_count: formData.votes_count
+      });
 
       toast({
         title: "تمت الإضافة بنجاح",
-        description: "تم إضافة القائد الجديد بنجاح"
+        description: "تم إضافة القائد الجديد بنجاح (محفوظ محلياً)"
       });
 
       // Reset form

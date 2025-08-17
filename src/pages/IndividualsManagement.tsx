@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import AddPersonModal from '@/components/AddPersonModal';
 import EditPersonModal from '@/components/EditPersonModal';
 import AddSampleDataButton from '@/components/AddSampleDataButton';
+import { getPersonsFromStorage, deletePersonFromStorage, initializeDefaultData } from '@/lib/localStorageOperations';
 
 interface Person {
   id: number;
@@ -54,96 +55,18 @@ export default function IndividualsManagement() {
         }
       }
 
-      // Fallback: Use mock data for production
-      console.log('Using mock data for persons');
-      const mockPersons: Person[] = [
-        {
-          id: 1,
-          leader_name: "أحمد محمد علي الحسني",
-          full_name: "سارة أحمد محمد الكريم",
-          residence: "حي الجادرية - بغداد",
-          phone: "07801234567",
-          workplace: "مدرسة الجادرية الابتدائية",
-          center_info: "مركز الجادرية الانتخابي",
-          station_number: "101",
-          votes_count: 45,
-          created_at: "2024-01-15",
-          updated_at: "2024-01-20"
-        },
-        {
-          id: 2,
-          leader_name: "فاطمة حسن محمود الزهراء",
-          full_name: "محمد علي حسن الموسوي",
-          residence: "حي الكرادة - بغداد",
-          phone: "07812345678",
-          workplace: "مستشفى الكرادة العام",
-          center_info: "مركز الكرادة الانتخابي",
-          station_number: "205",
-          votes_count: 38,
-          created_at: "2024-01-16",
-          updated_at: "2024-01-21"
-        },
-        {
-          id: 3,
-          leader_name: "محمد عبدالله سالم البصري",
-          full_name: "زينب محمد عبدالله النجار",
-          residence: "حي الزعفرانية - بغداد",
-          phone: "07823456789",
-          workplace: "شركة التوزيع الكهربائية",
-          center_info: "مركز الزعفرانية الانتخابي",
-          station_number: "312",
-          votes_count: 42,
-          created_at: "2024-01-17",
-          updated_at: "2024-01-22"
-        },
-        {
-          id: 4,
-          leader_name: "زينب أحمد حسين الموسوي",
-          full_name: "علي حسين محمد الشمري",
-          residence: "حي الشعلة - بغداد",
-          phone: "07834567890",
-          workplace: "دائرة صحة بغداد",
-          center_info: "مركز الشعلة الانتخابي",
-          station_number: "418",
-          votes_count: 35,
-          created_at: "2024-01-18",
-          updated_at: "2024-01-23"
-        },
-        {
-          id: 5,
-          leader_name: "علي محمد جاسم الكعبي",
-          full_name: "فاطمة علي جاسم الربيعي",
-          residence: "حي الدورة - بغداد",
-          phone: "07845678901",
-          workplace: "جامعة التكنولوجيا",
-          center_info: "مركز الدورة الانتخابي",
-          station_number: "524",
-          votes_count: 40,
-          created_at: "2024-01-19",
-          updated_at: "2024-01-24"
-        }
-      ];
+      // Fallback: Use localStorage data for production
+      console.log('Using localStorage data for persons');
+      initializeDefaultData(); // Initialize default data if needed
+      const storedPersons = getPersonsFromStorage();
+      setPersons(storedPersons);
       
-      setPersons(mockPersons);
     } catch (error) {
       console.error('خطأ في تحميل الأفراد:', error);
-      // Even on error, show mock data
-      const mockPersons: Person[] = [
-        {
-          id: 1,
-          leader_name: "قائد تجريبي",
-          full_name: "فرد تجريبي",
-          residence: "بغداد",
-          phone: "07801234567",
-          workplace: "موظف",
-          center_info: "مركز انتخابي",
-          station_number: "101",
-          votes_count: 25,
-          created_at: "2024-01-15",
-          updated_at: "2024-01-20"
-        }
-      ];
-      setPersons(mockPersons);
+      // Even on error, use localStorage
+      initializeDefaultData();
+      const storedPersons = getPersonsFromStorage();
+      setPersons(storedPersons);
     } finally {
       setLoading(false);
     }
@@ -167,26 +90,38 @@ export default function IndividualsManagement() {
 
   const handleDeletePerson = async (personId: number, personName: string) => {
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "deletePerson",
-        param: [personId]
-      });
-
-      if (error) {
-        toast({
-          title: "خطأ في حذف الفرد",
-          description: error,
-          variant: "destructive"
+      // Try EasySite API first
+      if (window?.ezsite?.apis?.run) {
+        const { data, error } = await window.ezsite.apis.run({
+          path: "deletePerson",
+          param: [personId]
         });
-        return;
+
+        if (!error) {
+          toast({
+            title: "تم الحذف بنجاح",
+            description: `تم حذف الفرد ${personName} بنجاح`
+          });
+          fetchPersons();
+          return;
+        }
       }
 
-      toast({
-        title: "تم الحذف بنجاح",
-        description: `تم حذف الفرد ${personName} بنجاح`
-      });
-
-      fetchPersons();
+      // Fallback: Use localStorage
+      const success = deletePersonFromStorage(personId);
+      if (success) {
+        toast({
+          title: "تم الحذف بنجاح",
+          description: `تم حذف الفرد ${personName} بنجاح`
+        });
+        fetchPersons();
+      } else {
+        toast({
+          title: "خطأ في الحذف",
+          description: "لم يتم العثور على الفرد المحدد",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('خطأ في حذف الفرد:', error);
       toast({

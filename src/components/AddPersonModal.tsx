@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { addPersonToStorage, getLeadersFromStorage } from '@/lib/localStorageOperations';
 
 interface PersonFormData {
   leader_name: string;
@@ -56,24 +57,35 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
 
   const fetchLeaders = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "getLeaders",
-        param: []
-      });
-
-      if (error) {
-        toast({
-          title: "خطأ في تحميل القادة",
-          description: error,
-          variant: "destructive"
+      // Try EasySite API first
+      if (window?.ezsite?.apis?.run) {
+        const { data, error } = await window.ezsite.apis.run({
+          path: "getLeaders",
+          param: []
         });
-        return;
+
+        if (!error && data) {
+          setLeaders(data || []);
+          return;
+        }
       }
 
-      const leadersList = data?.List || [];
-      setLeaders(leadersList);
+      // Fallback: Use localStorage data
+      const storedLeaders = getLeadersFromStorage();
+      const leaderOptions = storedLeaders.map(leader => ({
+        id: leader.id,
+        full_name: leader.full_name
+      }));
+      setLeaders(leaderOptions);
     } catch (error) {
       console.error('خطأ في تحميل القادة:', error);
+      // Even on error, use localStorage
+      const storedLeaders = getLeadersFromStorage();
+      const leaderOptions = storedLeaders.map(leader => ({
+        id: leader.id,
+        full_name: leader.full_name
+      }));
+      setLeaders(leaderOptions);
     }
   };
 
@@ -124,23 +136,53 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
 
     setIsLoading(true);
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: "addPerson",
-        param: [formData]
-      });
-
-      if (error) {
-        toast({
-          title: "خطأ في إضافة الفرد",
-          description: error,
-          variant: "destructive"
+      // Try EasySite API first
+      if (window?.ezsite?.apis?.run) {
+        const { data, error } = await window.ezsite.apis.run({
+          path: "addPerson",
+          param: [formData]
         });
-        return;
+
+        if (!error) {
+          toast({
+            title: "تمت الإضافة بنجاح",
+            description: "تم إضافة الفرد الجديد بنجاح"
+          });
+
+          // Reset form
+          setFormData({
+            leader_name: '',
+            full_name: '',
+            person_type: 'INDIVIDUAL',
+            residence: '',
+            phone: '',
+            workplace: '',
+            center_info: '',
+            station_number: '',
+            votes_count: 0
+          });
+
+          setIsOpen(false);
+          onPersonAdded();
+          return;
+        }
       }
+
+      // Fallback: Use localStorage
+      const newPerson = addPersonToStorage({
+        leader_name: formData.leader_name,
+        full_name: formData.full_name,
+        residence: formData.residence,
+        phone: formData.phone,
+        workplace: formData.workplace,
+        center_info: formData.center_info,
+        station_number: formData.station_number,
+        votes_count: formData.votes_count
+      });
 
       toast({
         title: "تمت الإضافة بنجاح",
-        description: "تم إضافة الفرد الجديد بنجاح"
+        description: "تم إضافة الفرد الجديد بنجاح (محفوظ محلياً)"
       });
 
       // Reset form
