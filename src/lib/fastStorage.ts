@@ -57,18 +57,24 @@ export const fastLoadPersons = (): Person[] => {
   
   // Use cache if valid
   if (personsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+    console.log('📦 استخدام الكاش للأفراد:', personsCache.length);
     return personsCache;
   }
   
   // Load from localStorage
   try {
+    console.log('💾 تحميل الأفراد من localStorage...');
     const data = localStorage.getItem('app_persons') || localStorage.getItem('persons');
+    console.log('📄 البيانات الخام:', data ? 'موجودة' : 'غير موجودة');
+    
     const persons = data ? JSON.parse(data) : [];
+    console.log('✅ تم تحليل البيانات:', persons.length, 'فرد');
+    
     personsCache = persons;
     cacheTimestamp = now;
     return persons;
   } catch (error) {
-    console.error('Fast load failed:', error);
+    console.error('❌ فشل التحميل السريع:', error);
     return [];
   }
 };
