@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { addLeaderToStorage } from '@/lib/localStorageOperations';
+import { addLeaderToStorage, Leader } from '@/lib/localStorageOperations';
+import { fastAddLeader } from '@/lib/fastStorage';
 
 interface LeaderFormData {
   full_name: string;
@@ -21,11 +22,12 @@ interface LeaderFormData {
 }
 
 interface AddLeaderModalProps {
-  onLeaderAdded: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onLeaderAdded: (leader: Leader) => void;
 }
 
-export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function AddLeaderModal({ isOpen, onClose, onLeaderAdded }: AddLeaderModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<LeaderFormData>({
     full_name: '',
@@ -78,51 +80,12 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
 
     setIsLoading(true);
     try {
-      // Try EasySite API first
-      if (window?.ezsite?.apis?.run) {
-        const { data, error } = await window.ezsite.apis.run({
-          path: "addLeader",
-          param: [formData]
-        });
-
-        if (!error) {
-          toast({
-            title: "تمت الإضافة بنجاح",
-            description: "تم إضافة القائد الجديد بنجاح"
-          });
-
-          // Reset form
-          setFormData({
-            full_name: '',
-            person_type: 'LEADER',
-            residence: '',
-            phone: '',
-            workplace: '',
-            center_info: '',
-            station_number: '',
-            votes_count: 0
-          });
-
-          setIsOpen(false);
-          onLeaderAdded();
-          return;
-        }
-      }
-
-      // Fallback: Use localStorage
-      const newLeader = addLeaderToStorage({
-        full_name: formData.full_name,
-        residence: formData.residence,
-        phone: formData.phone,
-        workplace: formData.workplace,
-        center_info: formData.center_info,
-        station_number: formData.station_number,
-        votes_count: formData.votes_count
-      });
-
+      // Use fast storage for instant response
+      const newLeader = fastAddLeader(formData);
+      
       toast({
         title: "تمت الإضافة بنجاح",
-        description: "تم إضافة القائد الجديد بنجاح (محفوظ محلياً)"
+        description: "تم إضافة القائد الجديد بنجاح"
       });
 
       // Reset form
@@ -137,22 +100,23 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
         votes_count: 0
       });
 
-      setIsOpen(false);
-      onLeaderAdded();
+      onClose();
+      onLeaderAdded(newLeader);
     } catch (error) {
-      console.error('خطأ في إضافة القائد:', error);
+      console.error('Error adding leader:', error);
       toast({
-        title: "خطأ في الإضافة",
+        title: "خطأ",
         description: "حدث خطأ أثناء إضافة القائد",
         variant: "destructive"
       });
+      onClose();
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogTrigger asChild>
         <Button className="btn-formal h-12 px-6 text-lg font-semibold">
           <Plus size={20} className="ml-2" />
@@ -286,7 +250,7 @@ export default function AddLeaderModal({ onLeaderAdded }: AddLeaderModalProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsOpen(false)}
+              onClick={() => onClose()}
               className="h-12 px-8 text-lg font-semibold"
               disabled={isLoading}>
 

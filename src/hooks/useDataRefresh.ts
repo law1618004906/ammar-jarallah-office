@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Leader, Person } from '../lib/localStorageOperations';
+import { getLeadersFromStorage, getPersonsFromStorage } from '../lib/localStorageOperations';
 import { dataManager, performanceMonitor } from '../lib/dataIndexing';
-import { getLeadersFromStorage, getPersonsFromStorage, type Leader, type Person } from '../lib/localStorageOperations';
 
 interface RefreshState {
   isRefreshing: boolean;
@@ -33,66 +34,38 @@ export function useDataRefresh(): UseDataRefreshReturn {
   const canRefresh = !refreshState.isRefreshing && 
     (Date.now() - lastRefreshTime.current) > MIN_REFRESH_INTERVAL;
 
-  const refreshData = useCallback(async (): Promise<{ leaders: Leader[]; persons: Person[] }> => {
-    // Prevent rapid consecutive refreshes
-    if (!canRefresh) {
-      throw new Error('يجب الانتظار قبل تحديث البيانات مرة أخرى');
+  const refreshData = useCallback(async (force = false): Promise<{ leaders: Leader[]; persons: Person[] }> => {
+    // Skip refresh if not forced and data was recently refreshed
+    const now = Date.now();
+    if (!force && now - lastRefreshTime.current < 2000) {
+      console.log('⏳ Refresh skipped - recent refresh');
+      return { leaders: [], persons: [] };
     }
 
-    const timer = performanceMonitor.startTimer('Data Refresh');
-    
     setRefreshState(prev => ({
       ...prev,
       isRefreshing: true,
       error: null
     }));
 
+    const timer = performanceMonitor.startTimer('Data Refresh');
+    
     try {
-      let leaders: Leader[] = [];
-      let persons: Person[] = [];
+      // Use localStorage directly for faster access
+      const leaders = getLeadersFromStorage();
+      const persons = getPersonsFromStorage();
+      
+      console.log('✅ Data loaded from localStorage (fast mode)');
 
-      // Try API first if available
-      if (typeof window !== 'undefined' && window.ezsite?.apis?.run) {
-        try {
-          const [leadersResponse, personsResponse] = await Promise.all([
-            window.ezsite.apis.run({ name: 'get_leaders', data: {} }),
-            window.ezsite.apis.run({ name: 'get_persons', data: {} })
-          ]);
-
-          if (leadersResponse?.leaders) {
-            leaders = leadersResponse.leaders;
-          }
-          if (personsResponse?.persons) {
-            persons = personsResponse.persons;
-          }
-
-          console.log('✅ Data refreshed from API');
-        } catch (apiError) {
-          console.warn('API refresh failed, using localStorage:', apiError);
-          
-          // Fallback to localStorage
-          leaders = getLeadersFromStorage();
-          persons = getPersonsFromStorage();
-          
-          console.log('✅ Data refreshed from localStorage');
-        }
-      } else {
-        // Use localStorage directly
-        leaders = getLeadersFromStorage();
-        persons = getPersonsFromStorage();
-        
-        console.log('✅ Data refreshed from localStorage');
+      // Only rebuild indexes if forced or significant time has passed
+      if (force || now - lastRefreshTime.current > 10000) {
+        dataManager.rebuildIndexes(leaders, persons);
+        console.log('🔄 Indexes rebuilt');
       }
-
-      // Rebuild indexes for performance
-      dataManager.rebuildIndexes(leaders, persons);
-
-      // Clear any existing caches to ensure fresh data
-      dataManager.clearCache();
-
+      
+      lastRefreshTime.current = now;
+      
       const refreshTime = new Date();
-      lastRefreshTime.current = Date.now();
-
       setRefreshState(prev => ({
         ...prev,
         isRefreshing: false,
@@ -102,7 +75,7 @@ export function useDataRefresh(): UseDataRefreshReturn {
       }));
 
       timer.end();
-
+      
       return { leaders, persons };
 
     } catch (error) {
@@ -117,7 +90,7 @@ export function useDataRefresh(): UseDataRefreshReturn {
       timer.end();
       throw error;
     }
-  }, [canRefresh]);
+  }, []);
 
   const forceRefresh = useCallback(async (): Promise<{ leaders: Leader[]; persons: Person[] }> => {
     // Reset the last refresh time to allow immediate refresh

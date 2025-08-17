@@ -69,20 +69,6 @@ export const saveLeadersToStorage = (leaders: Leader[]): void => {
   try {
     // Use consistent key for leaders
     localStorage.setItem('app_leaders', JSON.stringify(leaders));
-    
-    // Rebuild indexes after saving
-    if (typeof window !== 'undefined') {
-      // Use setTimeout to avoid circular dependency
-      setTimeout(async () => {
-        try {
-          const dataIndexing = await import('./dataIndexing');
-          dataIndexing.rebuildIndexes();
-        } catch (error) {
-          console.warn('Could not rebuild indexes:', error);
-        }
-      }, 0);
-    }
-    
     timer.end();
   } catch (error) {
     console.error('Error saving leaders to localStorage:', error);
@@ -102,6 +88,7 @@ export const addLeaderToStorage = (leaderData: Omit<Leader, 'id' | 'created_at' 
   
   leaders.push(newLeader);
   saveLeadersToStorage(leaders);
+  
   timer.end();
   return newLeader;
 };
@@ -156,24 +143,13 @@ export const getPersonsFromStorage = (): Person[] => {
 export const savePersonsToStorage = (persons: Person[]): void => {
   try {
     localStorage.setItem('app_persons', JSON.stringify(persons));
-    
-    // Rebuild indexes after saving
-    if (typeof window !== 'undefined') {
-      setTimeout(async () => {
-        try {
-          const dataIndexing = await import('./dataIndexing');
-          dataIndexing.rebuildIndexes();
-        } catch (error) {
-          console.warn('Could not rebuild indexes:', error);
-        }
-      }, 0);
-    }
   } catch (error) {
     console.error('Error saving persons to localStorage:', error);
   }
 };
 
 export const addPersonToStorage = (personData: Omit<Person, 'id' | 'created_at' | 'updated_at'>): Person => {
+  const timer = performanceMonitor.startTimer('addPersonToStorage');
   const persons = getPersonsFromStorage();
   const newPerson: Person = {
     ...personData,
@@ -184,6 +160,7 @@ export const addPersonToStorage = (personData: Omit<Person, 'id' | 'created_at' 
   
   persons.push(newPerson);
   savePersonsToStorage(persons);
+  timer.end();
   return newPerson;
 };
 

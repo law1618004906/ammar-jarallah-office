@@ -9,7 +9,9 @@ import AddLeaderModal from '@/components/AddLeaderModal';
 import EditLeaderModal from '@/components/EditLeaderModal';
 import AddSampleDataButton from '@/components/AddSampleDataButton';
 import EnhancedSearch from '@/components/EnhancedSearch';
-import { getLeadersFromStorage, deleteLeaderFromStorage, getPersonsFromStorage, initializeDefaultData, type Leader } from '@/lib/localStorageOperations';
+import { getLeadersFromStorage, deleteLeaderFromStorage } from '../lib/localStorageOperations';
+import { fastLoadLeaders, fastDeleteLeader } from '../lib/fastStorage';
+import { initializeDefaultData, type Leader } from '@/lib/localStorageOperations';
 import { dataManager, performanceMonitor } from '@/lib/dataIndexing';
 
 export default function LeadersManagement() {
@@ -27,57 +29,15 @@ export default function LeadersManagement() {
 
   const fetchLeaders = async () => {
     const timer = performanceMonitor.startTimer('fetchLeaders');
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      
-      // Check if EasySite API is available
-      if (typeof window !== 'undefined' && window.ezsite?.apis?.run) {
-        try {
-          const response = await window.ezsite.apis.run({
-            name: 'get_leaders',
-            data: {}
-          });
-          
-          if (response && response.leaders) {
-            setAllLeaders(response.leaders);
-            setDisplayedLeaders(response.leaders);
-            
-            // Build indexes for performance
-            const persons = getPersonsFromStorage();
-            dataManager.rebuildIndexes(response.leaders, persons);
-            
-            timer.end();
-            return;
-          }
-        } catch (apiError) {
-          console.warn('EasySite API failed, falling back to localStorage:', apiError);
-        }
-      }
-      
-      // Fallback to localStorage
-      const leaders = getLeadersFromStorage();
+      // Use fast loading for instant response
+      const leaders = fastLoadLeaders();
       setAllLeaders(leaders);
       setDisplayedLeaders(leaders);
       
-      // Build indexes for performance
-      const persons = getPersonsFromStorage();
-      dataManager.rebuildIndexes(leaders, persons);
-      
-      if (leaders.length === 0) {
-        toast({
-          title: "تنبيه",
-          description: "لا توجد بيانات قادة. يتم استخدام البيانات المحلية.",
-          variant: "default"
-        });
-      }
-      
-    } catch (error) {
-      console.error('Error fetching leaders:', error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ في تحميل بيانات القادة",
-        variant: "destructive"
-      });
+      console.log('⚡ Leaders loaded instantly from cache');
     } finally {
       setLoading(false);
       timer.end();
@@ -87,56 +47,30 @@ export default function LeadersManagement() {
   const handleDelete = async (leaderId: number) => {
     const timer = performanceMonitor.startTimer('deleteLeader');
     try {
-      // Try API first
-      if (typeof window !== 'undefined' && window.ezsite?.apis?.run) {
-        try {
-          await window.ezsite.apis.run({
-            name: 'delete_leader',
-            data: { leader_id: leaderId }
-          });
-          
-          // Update local state
-          const updatedLeaders = allLeaders.filter(leader => leader.id !== leaderId);
-          setAllLeaders(updatedLeaders);
-          setDisplayedLeaders(updatedLeaders);
-          
-          toast({
-            title: "تم الحذف",
-            description: "تم حذف القائد بنجاح",
-            variant: "default"
-          });
-          
-          timer.end();
-          return;
-        } catch (apiError) {
-          console.warn('API delete failed, using localStorage:', apiError);
-        }
-      }
-      
-      // Fallback to localStorage
-      const success = deleteLeaderFromStorage(leaderId);
+      // Use fast delete for instant response
+      const success = fastDeleteLeader(leaderId);
       if (success) {
         const updatedLeaders = allLeaders.filter(leader => leader.id !== leaderId);
         setAllLeaders(updatedLeaders);
         setDisplayedLeaders(updatedLeaders);
         
         toast({
-          title: "تم الحذف محلياً",
-          description: "تم حذف القائد من البيانات المحلية",
+          title: "تم الحذف",
+          description: "تم حذف القائد بنجاح",
           variant: "default"
         });
       } else {
-        throw new Error('Failed to delete from localStorage');
+        throw new Error('فشل في حذف القائد');
       }
       
+      timer.end();
     } catch (error) {
-      console.error('Error deleting leader:', error);
+      console.error('Delete failed:', error);
       toast({
         title: "خطأ",
-        description: "حدث خطأ في حذف القائد",
+        description: "فشل في حذف القائد",
         variant: "destructive"
       });
-    } finally {
       timer.end();
     }
   };
@@ -153,7 +87,12 @@ export default function LeadersManagement() {
     setIsAddModalOpen(false);
   };
 
-  const handleLeaderUpdated = (updatedLeader: Leader) => {
+  const handleLeaderUpdated = (updatedLeaderData: { id: number; full_name: string; person_type: 'LEADER'; residence: string; phone: string; workplace: string; center_info: string; station_number: string; votes_count: number }) => {
+    const updatedLeader = {
+      ...updatedLeaderData,
+      created_at: selectedLeader?.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
     const updatedLeaders = allLeaders.map(leader => 
       leader.id === updatedLeader.id ? updatedLeader : leader
     );
@@ -163,8 +102,8 @@ export default function LeadersManagement() {
     setSelectedLeader(null);
   };
 
-  const handleSearchResults = (results: Leader[] | any[]) => {
-    setDisplayedLeaders(results as Leader[]);
+  const handleSearchResults = (results: Leader[]) => {
+    setDisplayedLeaders(results);
   };
 
   const getLeaderStats = () => {

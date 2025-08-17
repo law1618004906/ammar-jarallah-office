@@ -5,8 +5,10 @@ import { Badge } from './ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { useDataRefresh, formatLastRefresh } from '../hooks/useDataRefresh';
 
+import { Leader, Person } from '../lib/localStorageOperations';
+
 interface RefreshButtonProps {
-  onDataRefreshed?: (data: { leaders: any[]; persons: any[] }) => void;
+  onDataRefreshed?: (data: { leaders: Leader[]; persons: Person[] }) => void;
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'sm' | 'default' | 'lg';
   showLastRefresh?: boolean;

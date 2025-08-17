@@ -20,6 +20,8 @@ interface LeaderFormData {
 }
 
 interface EditLeaderModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   leader: {
     id: number;
     full_name: string;
@@ -30,11 +32,10 @@ interface EditLeaderModalProps {
     station_number: string;
     votes_count: number;
   };
-  onLeaderUpdated: () => void;
+  onLeaderUpdated: (leader: LeaderFormData) => void;
 }
 
-export default function EditLeaderModal({ leader, onLeaderUpdated }: EditLeaderModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function EditLeaderModal({ isOpen, onClose, leader, onLeaderUpdated }: EditLeaderModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<LeaderFormData>({
     id: leader.id,
@@ -107,8 +108,8 @@ export default function EditLeaderModal({ leader, onLeaderUpdated }: EditLeaderM
         description: "تم تعديل بيانات القائد بنجاح"
       });
 
-      setIsOpen(false);
-      onLeaderUpdated();
+      onClose();
+      onLeaderUpdated(formData);
     } catch (error) {
       console.error('خطأ في تعديل القائد:', error);
       toast({
@@ -122,7 +123,7 @@ export default function EditLeaderModal({ leader, onLeaderUpdated }: EditLeaderM
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="formal-shadow border-blue-200 hover:border-blue-400 hover:bg-blue-50">
           <Edit2 size={16} className="ml-2" />
@@ -249,7 +250,7 @@ export default function EditLeaderModal({ leader, onLeaderUpdated }: EditLeaderM
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsOpen(false)}
+              onClick={onClose}
               className="h-12 px-8 text-lg font-semibold"
               disabled={isLoading}>
               إلغاء

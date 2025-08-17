@@ -28,7 +28,7 @@ interface Leader {
 }
 
 interface AddPersonModalProps {
-  onPersonAdded: () => void;
+  onPersonAdded: (newPerson: PersonFormData & { id: number; created_at: string; updated_at: string }) => void;
 }
 
 export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
@@ -163,7 +163,12 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
           });
 
           setIsOpen(false);
-          onPersonAdded();
+          if (data) {
+            onPersonAdded({
+              ...data,
+              person_type: 'INDIVIDUAL' as const
+            });
+          }
           return;
         }
       }
@@ -199,7 +204,10 @@ export default function AddPersonModal({ onPersonAdded }: AddPersonModalProps) {
       });
 
       setIsOpen(false);
-      onPersonAdded();
+      onPersonAdded({
+        ...newPerson,
+        person_type: 'INDIVIDUAL' as const
+      });
     } catch (error) {
       console.error('خطأ في إضافة الفرد:', error);
       toast({

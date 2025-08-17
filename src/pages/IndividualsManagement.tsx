@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Search, Plus, Edit2, Trash2, Phone, MapPin, Briefcase, Vote, Crown, Building, Shield } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,110 +11,71 @@ import { useToast } from '@/hooks/use-toast';
 import AddPersonModal from '@/components/AddPersonModal';
 import EditPersonModal from '@/components/EditPersonModal';
 import AddSampleDataButton from '@/components/AddSampleDataButton';
-import { getPersonsFromStorage, deletePersonFromStorage, initializeDefaultData } from '@/lib/localStorageOperations';
-
-interface Person {
-  id: number;
-  leader_name: string;
-  full_name: string;
-  residence: string;
-  phone: string;
-  workplace: string;
-  center_info: string;
-  station_number: string;
-  votes_count: number;
-  created_at: string;
-  updated_at: string;
-}
+import { getPersonsFromStorage, deletePersonFromStorage, initializeDefaultData, Person } from '@/lib/localStorageOperations';
+import { fastLoadPersons, fastDeletePerson } from '@/lib/fastStorage';
+import { useDataRefresh } from '@/hooks/useDataRefresh';
+import EnhancedSearch from '@/components/EnhancedSearch';
+import RefreshButton from '@/components/RefreshButton';
 
 export default function IndividualsManagement() {
-  const [persons, setPersons] = useState<Person[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLeader, setSelectedLeader] = useState<string>('');
+  const [allPersons, setAllPersons] = useState<Person[]>([]);
+  const [displayedPersons, setDisplayedPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { refreshData } = useDataRefresh();
 
-  useEffect(() => {
-    fetchPersons();
-  }, []);
-
-  const fetchPersons = async () => {
+  const loadPersonsCallback = useCallback(async () => {
     try {
       setLoading(true);
-
-      // Check if EasySite API is available
-      if (window?.ezsite?.apis?.run) {
-        const { data, error } = await window.ezsite.apis.run({
-          path: "getPersons",
-          param: []
-        });
-
-        if (!error && data) {
-          setPersons(data || []);
-          return;
-        }
-      }
-
-      // Fallback: Use localStorage data for production
-      console.log('Using localStorage data for persons');
-      initializeDefaultData(); // Initialize default data if needed
-      const storedPersons = getPersonsFromStorage();
-      setPersons(storedPersons);
+      const timer = performance.now();
+      
+      // استخدام التحميل السريع
+      const persons = await fastLoadPersons();
+      
+      const loadTime = performance.now() - timer;
+      console.log(`⚡ تم تحميل ${persons.length} فرد في ${Math.round(loadTime)}ms`);
+      
+      setAllPersons(persons);
+      setDisplayedPersons(persons);
       
     } catch (error) {
       console.error('خطأ في تحميل الأفراد:', error);
-      // Even on error, use localStorage
-      initializeDefaultData();
-      const storedPersons = getPersonsFromStorage();
-      setPersons(storedPersons);
+      toast({
+        title: "خطأ في التحميل",
+        description: "حدث خطأ أثناء تحميل بيانات الأفراد",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  // الحصول على قائمة القادة الفريدة
-  const uniqueLeaders = Array.from(new Set(persons.map((person) => person.leader_name)));
+  useEffect(() => {
+    loadPersonsCallback();
+  }, [loadPersonsCallback]);
 
-  // تصفية الأفراد حسب البحث والقائد المختار
-  const filteredPersons = persons.filter((person) => {
-    const matchesSearch = person.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    person.phone.includes(searchTerm) ||
-    person.residence.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    person.workplace.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    person.leader_name.toLowerCase().includes(searchTerm.toLowerCase());
+  const loadPersons = loadPersonsCallback;
 
-    const matchesLeader = !selectedLeader || person.leader_name === selectedLeader;
-
-    return matchesSearch && matchesLeader;
-  });
-
-  const handleDeletePerson = async (personId: number, personName: string) => {
+  const handleDelete = async (personId: number, personName: string) => {
     try {
-      // Try EasySite API first
-      if (window?.ezsite?.apis?.run) {
-        const { data, error } = await window.ezsite.apis.run({
-          path: "deletePerson",
-          param: [personId]
-        });
-
-        if (!error) {
-          toast({
-            title: "تم الحذف بنجاح",
-            description: `تم حذف الفرد ${personName} بنجاح`
-          });
-          fetchPersons();
-          return;
-        }
-      }
-
-      // Fallback: Use localStorage
-      const success = deletePersonFromStorage(personId);
+      const timer = performance.now();
+      
+      // استخدام الحذف السريع
+      const success = await fastDeletePerson(personId);
+      
       if (success) {
+        const deleteTime = performance.now() - timer;
+        console.log(`⚡ تم حذف الفرد في ${Math.round(deleteTime)}ms`);
+        
+        // تحديث فوري للواجهة
+        const updatedPersons = allPersons.filter(person => person.id !== personId);
+        setAllPersons(updatedPersons);
+        setDisplayedPersons(updatedPersons);
+        
         toast({
           title: "تم الحذف بنجاح",
           description: `تم حذف الفرد ${personName} بنجاح`
         });
-        fetchPersons();
       } else {
         toast({
           title: "خطأ في الحذف",
@@ -131,6 +92,41 @@ export default function IndividualsManagement() {
       });
     }
   };
+
+  const handlePersonAdded = (newPerson: Person) => {
+    const updatedPersons = [...allPersons, newPerson];
+    setAllPersons(updatedPersons);
+    setDisplayedPersons(updatedPersons);
+  };
+
+  const handlePersonUpdated = (updatedPersonData: Person) => {
+    const updatedPerson = {
+      ...updatedPersonData,
+      created_at: allPersons.find(p => p.id === updatedPersonData.id)?.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    const updatedPersons = allPersons.map(person => 
+      person.id === updatedPerson.id ? updatedPerson : person
+    );
+    setAllPersons(updatedPersons);
+    setDisplayedPersons(updatedPersons);
+  };
+
+  const handleSearchResults = (results: Person[]) => {
+    setDisplayedPersons(results);
+  };
+
+  const getPersonStats = () => {
+    const uniqueLeaders = Array.from(new Set(allPersons.map(p => p.leader_name)));
+    return {
+      totalPersons: allPersons.length,
+      displayedPersons: displayedPersons.length,
+      totalVotes: allPersons.reduce((sum, person) => sum + person.votes_count, 0),
+      uniqueLeaders: uniqueLeaders.length
+    };
+  };
+
+  const stats = getPersonStats();
 
   const PersonCard = ({ person }: {person: Person;}) =>
   <Card className="formal-card interactive-hover formal-shadow">
@@ -189,14 +185,14 @@ export default function IndividualsManagement() {
           </div>
       }
 
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
-          <EditPersonModal person={person} onPersonUpdated={fetchPersons} />
+        <div className="flex items-end gap-3 mt-6 pt-4 border-t border-gray-200">
+          <EditPersonModal person={person} onPersonUpdated={handlePersonUpdated} />
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-400 hover:bg-red-50">
                 <Trash2 size={16} className="ml-2" />
                 حذف
-              </Button>
+            </Button>
             </AlertDialogTrigger>
             <AlertDialogContent dir="rtl">
               <AlertDialogHeader>
@@ -209,7 +205,7 @@ export default function IndividualsManagement() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                <AlertDialogAction onClick={() => handleDeletePerson(person.id, person.full_name)} className="bg-red-600 hover:bg-red-700">
+                <AlertDialogAction onClick={() => handleDelete(person.id, person.full_name)} className="bg-red-600 hover:bg-red-700">
                   حذف
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -261,69 +257,42 @@ export default function IndividualsManagement() {
             <CardContent className="p-8">
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
-                  <div className="flex-1 max-w-md">
-                    <div className="relative">
-                      <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={22} />
-                      <Input
-                        type="text"
-                        placeholder="البحث في الأفراد (الاسم، الهاتف، القائد...)"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pr-12 rtl-input text-lg h-14 formal-shadow border-2 border-gray-200 focus:border-blue-400" />
-
-                    </div>
+                  <div className="flex-1">
+                    <EnhancedSearch 
+                      data={allPersons}
+                      type="persons"
+                      onResults={handleSearchResults}
+                      placeholder="البحث في الأفراد (الاسم، الهاتف، القائد...)"
+                    />
                   </div>
                   
                   <div className="flex gap-3">
-                    <AddPersonModal onPersonAdded={fetchPersons} />
-                    <Button
-                      variant="outline"
-                      onClick={fetchPersons}
-                      className="h-12 px-6 text-lg font-semibold formal-shadow border-2 border-blue-200 hover:border-blue-400">
-
-                      تحديث البيانات
-                    </Button>
-                    <AddSampleDataButton onDataAdded={fetchPersons} />
+                    <AddPersonModal onPersonAdded={handlePersonAdded} />
+                    <RefreshButton 
+                      onDataRefreshed={() => loadPersons()}
+                    />
+                    <AddSampleDataButton onDataAdded={() => loadPersons()} />
                   </div>
                 </div>
 
-                {/* تصفية حسب القائد */}
-                <div className="max-w-sm">
-                  <Select value={selectedLeader} onValueChange={setSelectedLeader}>
-                    <SelectTrigger className="rtl-input h-12 text-lg formal-shadow border-2 border-gray-200">
-                      <SelectValue placeholder="تصفية حسب القائد" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">جميع القادة</SelectItem>
-                      {uniqueLeaders.map((leader) =>
-                      <SelectItem key={leader} value={leader}>
-                          {leader}
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* إحصائيات سريعة */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-6 border-t border-gray-200">
-                <div className="text-center p-4 bg-blue-50 rounded-xl">
-                  <div className="text-3xl font-bold text-blue-600">{persons.length}</div>
-                  <div className="text-sm formal-subtitle font-medium">إجمالي الأفراد</div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-xl">
-                  <div className="text-3xl font-bold text-purple-600">{filteredPersons.length}</div>
-                  <div className="text-sm formal-subtitle font-medium">نتائج البحث</div>
-                </div>
-                <div className="text-center p-4 bg-green-50 rounded-xl">
-                  <div className="text-3xl font-bold text-green-600">
-                    {persons.reduce((sum, person) => sum + person.votes_count, 0)}
+                {/* إحصائيات سريعة */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-6 border-t border-gray-200">
+                  <div className="text-center p-4 bg-blue-50 rounded-xl">
+                    <div className="text-3xl font-bold text-blue-600">{stats.totalPersons}</div>
+                    <div className="text-sm formal-subtitle font-medium">إجمالي الأفراد</div>
                   </div>
-                  <div className="text-sm formal-subtitle font-medium">إجمالي الأصوات</div>
-                </div>
-                <div className="text-center p-4 bg-orange-50 rounded-xl">
-                  <div className="text-3xl font-bold text-orange-600">{uniqueLeaders.length}</div>
-                  <div className="text-sm formal-subtitle font-medium">عدد القادة</div>
+                  <div className="text-center p-4 bg-purple-50 rounded-xl">
+                    <div className="text-3xl font-bold text-purple-600">{stats.displayedPersons}</div>
+                    <div className="text-sm formal-subtitle font-medium">نتائج البحث</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-xl">
+                    <div className="text-3xl font-bold text-green-600">{stats.totalVotes}</div>
+                    <div className="text-sm formal-subtitle font-medium">إجمالي الأصوات</div>
+                  </div>
+                  <div className="text-center p-4 bg-orange-50 rounded-xl">
+                    <div className="text-3xl font-bold text-orange-600">{stats.uniqueLeaders}</div>
+                    <div className="text-sm formal-subtitle font-medium">عدد القادة</div>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -331,36 +300,31 @@ export default function IndividualsManagement() {
         </div>
 
         {/* قائمة الأفراد */}
-        {filteredPersons.length === 0 ?
+        {displayedPersons.length === 0 ?
         <div className="text-center py-16">
             <Users className="mx-auto text-gray-400 mb-6" size={80} />
             <h3 className="text-2xl font-semibold text-gray-600 mb-4">
-              {searchTerm || selectedLeader ? 'لا توجد نتائج للبحث' : 'لا توجد أفراد مسجلون'}
+              {allPersons.length === 0 ? 'لا توجد أفراد مسجلون' : 'لا توجد نتائج للبحث'}
             </h3>
             <p className="formal-subtitle text-lg">
-              {searchTerm || selectedLeader ? 'جرب تغيير معايير البحث' : 'ابدأ بإضافة فرد جديد'}
+              {allPersons.length === 0 ? 'ابدأ بإضافة فرد جديد' : 'جرب تغيير معايير البحث'}
             </p>
           </div> :
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPersons.map((person) =>
+            {displayedPersons.map((person) =>
           <PersonCard key={person.id} person={person} />
           )}
           </div>
         }
 
         {/* معلومات إضافية */}
-        {(searchTerm || selectedLeader) && filteredPersons.length > 0 &&
+        {displayedPersons.length > 0 && displayedPersons.length !== allPersons.length &&
         <div className="mt-12 text-center">
             <div className="formal-card rounded-xl p-6">
               <p className="formal-subtitle text-lg">
-                تم العثور على <span className="font-bold text-blue-600 text-xl">{filteredPersons.length}</span> فرد
-                من أصل <span className="font-bold text-xl">{persons.length}</span>
-                {selectedLeader &&
-              <>
-                    {" "}للقائد <span className="font-bold text-purple-600 text-xl">{selectedLeader}</span>
-                  </>
-              }
+                تم العثور على <span className="font-bold text-blue-600 text-xl">{displayedPersons.length}</span> فرد
+                من أصل <span className="font-bold text-xl">{allPersons.length}</span>
               </p>
             </div>
           </div>

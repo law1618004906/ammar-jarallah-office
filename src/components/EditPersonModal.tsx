@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Edit2, Crown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ interface EditPersonModalProps {
     station_number: string;
     votes_count: number;
   };
-  onPersonUpdated: () => void;
+  onPersonUpdated: (updatedPerson: PersonFormData) => void;
 }
 
 export default function EditPersonModal({ person, onPersonUpdated }: EditPersonModalProps) {
@@ -60,13 +60,7 @@ export default function EditPersonModal({ person, onPersonUpdated }: EditPersonM
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchLeaders();
-    }
-  }, [isOpen]);
-
-  const fetchLeaders = async () => {
+  const fetchLeaders = useCallback(async () => {
     try {
       const { data, error } = await window.ezsite.apis.run({
         path: "getLeaders",
@@ -87,7 +81,11 @@ export default function EditPersonModal({ person, onPersonUpdated }: EditPersonM
     } catch (error) {
       console.error('خطأ في تحميل القادة:', error);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchLeaders();
+  }, [fetchLeaders]);
 
   const handleInputChange = (field: keyof PersonFormData, value: string | number) => {
     setFormData((prev) => ({
@@ -156,7 +154,7 @@ export default function EditPersonModal({ person, onPersonUpdated }: EditPersonM
       });
 
       setIsOpen(false);
-      onPersonUpdated();
+      onPersonUpdated(formData);
     } catch (error) {
       console.error('خطأ في تعديل الفرد:', error);
       toast({

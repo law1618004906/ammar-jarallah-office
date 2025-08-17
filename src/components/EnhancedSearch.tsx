@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search, Filter, X, Clock, TrendingUp } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
@@ -40,9 +40,57 @@ export default function EnhancedSearch({
   // Debounced search function
   const debouncedSearch = useMemo(
     () => debounce((query: string, currentFilters: SearchFilters) => {
-      performSearch(query, currentFilters);
+      const timer = performanceMonitor.startTimer('Enhanced Search');
+      
+      let results: (Leader | Person)[];
+      
+      if (type === 'leaders') {
+        results = dataManager.searchLeaders(query, data as Leader[]);
+      } else {
+        results = dataManager.searchPersons(query, '', data as Person[]);
+      }
+
+      // Apply filters
+      if (currentFilters.station) {
+        results = results.filter(item => 
+          item.station_number?.includes(currentFilters.station!)
+        );
+      }
+      if (currentFilters.workplace) {
+        results = results.filter(item => 
+          item.workplace?.toLowerCase().includes(currentFilters.workplace!.toLowerCase())
+        );
+      }
+      if (currentFilters.residence) {
+        results = results.filter(item => 
+          item.residence?.toLowerCase().includes(currentFilters.residence!.toLowerCase())
+        );
+      }
+      if (currentFilters.leader && type === 'persons') {
+        results = results.filter(item => 
+          (item as Person).leader_name?.toLowerCase().includes(currentFilters.leader!.toLowerCase())
+        );
+      }
+
+      const searchTime = timer.end();
+      
+      setSearchStats({
+        totalResults: results.length,
+        searchTime: Math.round(searchTime)
+      });
+
+      onResults(results);
+
+      // Add to search history if it's a meaningful search
+      if (query.trim() && query.length > 2) {
+        setSearchHistory(prev => {
+          const newHistory = [query, ...prev.filter(h => h !== query)].slice(0, 5);
+          localStorage.setItem(`search_history_${type}`, JSON.stringify(newHistory));
+          return newHistory;
+        });
+      }
     }, 300),
-    [data, type]
+    [data, type, onResults]
   );
 
   // Get unique filter options
@@ -123,6 +171,12 @@ export default function EnhancedSearch({
       }
     }
   }, [type]);
+
+  // Handle history item click
+  const handleHistoryClick = (historyItem: string) => {
+    setSearchQuery(historyItem);
+    debouncedSearch(historyItem, filters);
+  };
 
   // Handle search input change
   const handleSearchChange = (value: string) => {
@@ -314,16 +368,14 @@ export default function EnhancedSearch({
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-gray-700">عمليات البحث الأخيرة</h4>
           <div className="flex flex-wrap gap-2">
-            {searchHistory.map((query, index) => (
-              <Button
+            {searchHistory.filter(item => item !== searchQuery).slice(0, 3).map((item, index) => (
+              <button
                 key={index}
-                variant="outline"
-                size="sm"
-                onClick={() => useHistoryItem(query)}
-                className="h-7 text-xs"
+                onClick={() => handleHistoryClick(String(item))}
+                className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-600 transition-colors"
               >
-                {query}
-              </Button>
+                {String(item)}
+              </button>
             ))}
           </div>
         </div>
