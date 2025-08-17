@@ -1,6 +1,8 @@
 // Local storage operations for production environment
 // Used as fallback when EasySite API is not available
 
+import { dataManager, performanceMonitor } from './dataIndexing';
+
 export interface Leader {
   id: number;
   full_name: string;
@@ -33,26 +35,47 @@ const generateId = (): number => {
   return Date.now() + Math.floor(Math.random() * 1000);
 };
 
-// Leaders operations
+// Get all leaders from localStorage with indexing
 export const getLeadersFromStorage = (): Leader[] => {
+  const timer = performanceMonitor.startTimer('getLeadersFromStorage');
   try {
-    const stored = localStorage.getItem('app_leaders');
-    return stored ? JSON.parse(stored) : [];
+    const data = localStorage.getItem('leaders');
+    if (!data) {
+      initializeDefaultData();
+      return getLeadersFromStorage();
+    }
+    const leaders = JSON.parse(data);
+    
+    // Note: Avoid circular dependency - indexes will be rebuilt when needed
+    
+    timer.end();
+    return leaders;
   } catch (error) {
     console.error('Error reading leaders from localStorage:', error);
+    timer.end();
     return [];
   }
 };
 
 export const saveLeadersToStorage = (leaders: Leader[]): void => {
+  const timer = performanceMonitor.startTimer('saveLeadersToStorage');
   try {
+    localStorage.setItem('leaders', JSON.stringify(leaders));
     localStorage.setItem('app_leaders', JSON.stringify(leaders));
+    
+    // Rebuild indexes after saving
+    const persons = JSON.parse(localStorage.getItem('persons') || '[]');
+    dataManager.rebuildIndexes(leaders, persons);
+    
+    timer.end();
   } catch (error) {
     console.error('Error saving leaders to localStorage:', error);
+    timer.end();
   }
 };
 
 export const addLeaderToStorage = (leaderData: Omit<Leader, 'id' | 'created_at' | 'updated_at'>): Leader => {
+  const timer = performanceMonitor.startTimer('addLeaderToStorage');
   const leaders = getLeadersFromStorage();
   const newLeader: Leader = {
     ...leaderData,
@@ -63,17 +86,21 @@ export const addLeaderToStorage = (leaderData: Omit<Leader, 'id' | 'created_at' 
   
   leaders.push(newLeader);
   saveLeadersToStorage(leaders);
+  timer.end();
   return newLeader;
 };
 
 export const deleteLeaderFromStorage = (leaderId: number): boolean => {
+  const timer = performanceMonitor.startTimer('deleteLeaderFromStorage');
   try {
     const leaders = getLeadersFromStorage();
     const filteredLeaders = leaders.filter(leader => leader.id !== leaderId);
     saveLeadersToStorage(filteredLeaders);
+    timer.end();
     return true;
   } catch (error) {
     console.error('Error deleting leader from localStorage:', error);
+    timer.end();
     return false;
   }
 };
