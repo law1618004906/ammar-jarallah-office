@@ -7,11 +7,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import AddLeaderModal from '@/components/AddLeaderModal';
 import EditLeaderModal from '@/components/EditLeaderModal';
-import AddSampleDataButton from '@/components/AddSampleDataButton';
 import EnhancedSearch from '@/components/EnhancedSearch';
 import { getLeadersFromStorage, deleteLeaderFromStorage } from '../lib/localStorageOperations';
 import { fastLoadLeaders, fastDeleteLeader } from '../lib/fastStorage';
-import { initializeDefaultData, type Leader } from '@/lib/localStorageOperations';
+import { type Leader } from '@/lib/localStorageOperations';
 import { dataManager, performanceMonitor } from '@/lib/dataIndexing';
 
 export default function LeadersManagement() {
@@ -137,7 +136,6 @@ export default function LeadersManagement() {
           <p className="text-gray-600 mt-1">إدارة وتنظيم بيانات القادة في النظام</p>
         </div>
         <div className="flex gap-2">
-          <AddSampleDataButton onDataAdded={fetchLeaders} />
           <Button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             إضافة قائد جديد

@@ -10,8 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import AddPersonModal from '@/components/AddPersonModal';
 import EditPersonModal from '@/components/EditPersonModal';
-import AddSampleDataButton from '@/components/AddSampleDataButton';
-import { getPersonsFromStorage, deletePersonFromStorage, initializeDefaultData, Person } from '@/lib/localStorageOperations';
+import { getPersonsFromStorage, deletePersonFromStorage, Person } from '@/lib/localStorageOperations';
 import { fastLoadPersons, fastDeletePerson } from '@/lib/fastStorage';
 import { useDataRefresh } from '@/hooks/useDataRefresh';
 import EnhancedSearch from '@/components/EnhancedSearch';
@@ -302,7 +301,6 @@ export default function IndividualsManagement() {
                     <RefreshButton 
                       onDataRefreshed={() => loadPersons()}
                     />
-                    <AddSampleDataButton onDataAdded={() => loadPersons()} />
                   </div>
                 </div>
 
