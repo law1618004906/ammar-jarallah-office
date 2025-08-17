@@ -381,3 +381,19 @@ export const performanceMonitor = {
     };
   }
 };
+
+// Rebuild indexes function
+export const rebuildIndexes = () => {
+  // Get current data from localStorage to rebuild indexes
+  try {
+    const leadersData = localStorage.getItem('app_leaders') || localStorage.getItem('leaders');
+    const personsData = localStorage.getItem('app_persons') || localStorage.getItem('persons');
+    
+    const leaders = leadersData ? JSON.parse(leadersData) : [];
+    const persons = personsData ? JSON.parse(personsData) : [];
+    
+    dataManager.rebuildIndexes(leaders, persons);
+  } catch (error) {
+    console.error('Error rebuilding indexes:', error);
+  }
+};

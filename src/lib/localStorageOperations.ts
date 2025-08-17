@@ -39,12 +39,19 @@ const generateId = (): number => {
 export const getLeadersFromStorage = (): Leader[] => {
   const timer = performanceMonitor.startTimer('getLeadersFromStorage');
   try {
-    const data = localStorage.getItem('leaders');
+    // Try both keys for backward compatibility
+    let data = localStorage.getItem('leaders') || localStorage.getItem('app_leaders');
+    
     if (!data) {
-      initializeDefaultData();
-      return getLeadersFromStorage();
+      // Only initialize default data if no data exists at all
+      const hasAnyData = localStorage.getItem('leaders') || localStorage.getItem('app_leaders');
+      if (!hasAnyData) {
+        initializeDefaultData();
+        data = localStorage.getItem('leaders') || localStorage.getItem('app_leaders');
+      }
     }
-    const leaders = JSON.parse(data);
+    
+    const leaders = data ? JSON.parse(data) : [];
     
     // Note: Avoid circular dependency - indexes will be rebuilt when needed
     
@@ -60,12 +67,21 @@ export const getLeadersFromStorage = (): Leader[] => {
 export const saveLeadersToStorage = (leaders: Leader[]): void => {
   const timer = performanceMonitor.startTimer('saveLeadersToStorage');
   try {
-    localStorage.setItem('leaders', JSON.stringify(leaders));
+    // Use consistent key for leaders
     localStorage.setItem('app_leaders', JSON.stringify(leaders));
     
     // Rebuild indexes after saving
-    const persons = JSON.parse(localStorage.getItem('persons') || '[]');
-    dataManager.rebuildIndexes(leaders, persons);
+    if (typeof window !== 'undefined') {
+      // Use setTimeout to avoid circular dependency
+      setTimeout(async () => {
+        try {
+          const dataIndexing = await import('./dataIndexing');
+          dataIndexing.rebuildIndexes();
+        } catch (error) {
+          console.warn('Could not rebuild indexes:', error);
+        }
+      }, 0);
+    }
     
     timer.end();
   } catch (error) {
@@ -140,6 +156,18 @@ export const getPersonsFromStorage = (): Person[] => {
 export const savePersonsToStorage = (persons: Person[]): void => {
   try {
     localStorage.setItem('app_persons', JSON.stringify(persons));
+    
+    // Rebuild indexes after saving
+    if (typeof window !== 'undefined') {
+      setTimeout(async () => {
+        try {
+          const dataIndexing = await import('./dataIndexing');
+          dataIndexing.rebuildIndexes();
+        } catch (error) {
+          console.warn('Could not rebuild indexes:', error);
+        }
+      }, 0);
+    }
   } catch (error) {
     console.error('Error saving persons to localStorage:', error);
   }
@@ -194,10 +222,11 @@ export const updatePersonInStorage = (personId: number, updatedData: Partial<Per
 
 // Initialize default data if storage is empty
 export const initializeDefaultData = (): void => {
-  const leaders = getLeadersFromStorage();
-  const persons = getPersonsFromStorage();
+  // Check if any data exists in localStorage first
+  const hasLeaders = localStorage.getItem('leaders') || localStorage.getItem('app_leaders');
+  const hasPersons = localStorage.getItem('persons') || localStorage.getItem('app_persons');
   
-  if (leaders.length === 0) {
+  if (!hasLeaders) {
     const defaultLeaders: Leader[] = [
       {
         id: 1,
@@ -227,7 +256,7 @@ export const initializeDefaultData = (): void => {
     saveLeadersToStorage(defaultLeaders);
   }
   
-  if (persons.length === 0) {
+  if (!hasPersons) {
     const defaultPersons: Person[] = [
       {
         id: 1,
