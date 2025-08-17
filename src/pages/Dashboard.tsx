@@ -1,10 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Crown, Users, Vote, BarChart3, TrendingUp, MapPin, Calendar, Phone, Shield, Award, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { fastLoadPersons, fastLoadLeaders } from '@/lib/fastStorage';
+import { Person, Leader } from '@/lib/localStorageOperations';
 
 interface DashboardStats {
   totalLeaders: number;
@@ -28,74 +30,111 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchDashboardStats();
+  const calculateStatsFromData = useCallback((persons: Person[], leaders: Leader[]): DashboardStats => {
+    const totalLeaders = leaders.length;
+    const totalPersons = persons.length;
+    
+    // حساب الأصوات (افتراضي: كل فرد = صوت واحد)
+    const totalVotes = persons.reduce((sum, person) => sum + (1), 0);
+    const avgVotesPerLeader = totalLeaders > 0 ? Math.round(totalVotes / totalLeaders) : 0;
+    
+    // حساب أفضل القادة
+    const leaderStats = leaders.map(leader => {
+      const leaderPersons = persons.filter(p => p.leader_name === leader.full_name);
+      const leaderVotes = leaderPersons.reduce((sum, person) => sum + (1), 0);
+      
+      return {
+        name: leader.full_name || 'قائد غير محدد',
+        totalVotes: leaderVotes,
+        personsCount: leaderPersons.length
+      };
+    });
+    
+    const topLeaders = leaderStats
+      .sort((a, b) => b.totalVotes - a.totalVotes)
+      .slice(0, 5);
+    
+    // نشاط حديث افتراضي
+    const recentActivity = [
+      { type: "info", message: `النظام يحتوي على ${totalLeaders} قائد و ${totalPersons} فرد`, timestamp: "الآن" },
+      { type: "update", message: "تم تحديث البيانات من التخزين المحلي", timestamp: "منذ لحظات" },
+      { type: "stats", message: `إجمالي الأصوات: ${totalVotes}`, timestamp: "محدث" }
+    ];
+    
+    return {
+      totalLeaders,
+      totalPersons,
+      totalVotes,
+      avgVotesPerLeader,
+      topLeaders,
+      recentActivity
+    };
   }, []);
 
-  const fetchDashboardStats = async () => {
+  const loadDashboardStatsCallback = useCallback(() => {
+    console.log('🚀 Dashboard: بدء تحميل الإحصائيات...');
+    
     try {
-      setLoading(true);
+      // استخدام التخزين السريع للحصول على البيانات فوراً
+      const fastPersons = fastLoadPersons();
+      const fastLeaders = fastLoadLeaders();
       
-      // Check if EasySite API is available
+      console.log('📊 Dashboard: تم تحميل البيانات السريعة:', {
+        persons: fastPersons.length,
+        leaders: fastLeaders.length
+      });
+      
+      // حساب الإحصائيات من البيانات المحلية
+      const calculatedStats = calculateStatsFromData(fastPersons, fastLeaders);
+      setStats(calculatedStats);
+      setLoading(false);
+      
+      console.log('✅ Dashboard: تم تحميل الإحصائيات بنجاح');
+      
+      // تحديث اختياري من API في الخلفية
       if (window?.ezsite?.apis?.run) {
-        const { data, error } = await window.ezsite.apis.run({
+        window.ezsite.apis.run({
           path: "getDashboardStats",
           param: []
+        }).then(({ data, error }) => {
+          if (!error && data) {
+            console.log('🔄 Dashboard: تم تحديث البيانات من API');
+            setStats(data);
+          }
+        }).catch(error => {
+          console.log('⚠️ Dashboard: فشل تحديث API، استمرار بالبيانات المحلية');
         });
-
-        if (!error && data) {
-          setStats(data);
-          return;
-        }
       }
-
-      // Fallback: Use mock data for production
-      console.log('Using mock data for dashboard');
-      const mockStats: DashboardStats = {
-        totalLeaders: 15,
-        totalPersons: 450,
-        totalVotes: 2850,
-        avgVotesPerLeader: 190,
+      
+    } catch (error) {
+      console.error('❌ Dashboard: خطأ في تحميل البيانات:', error);
+      
+      // بيانات احتياطية في حالة الخطأ
+      const fallbackStats: DashboardStats = {
+        totalLeaders: 5,
+        totalPersons: 50,
+        totalVotes: 500,
+        avgVotesPerLeader: 100,
         topLeaders: [
-          { name: "أحمد محمد علي", totalVotes: 320, personsCount: 45 },
-          { name: "فاطمة حسن محمود", totalVotes: 285, personsCount: 38 },
-          { name: "محمد عبدالله سالم", totalVotes: 260, personsCount: 42 },
-          { name: "زينب أحمد حسين", totalVotes: 240, personsCount: 35 },
-          { name: "علي محمد جاسم", totalVotes: 220, personsCount: 40 }
+          { name: "قائد افتراضي", totalVotes: 100, personsCount: 10 }
         ],
         recentActivity: [
-          { type: "add", message: "تم إضافة قائد جديد: سارة أحمد", timestamp: "منذ ساعتين" },
-          { type: "update", message: "تم تحديث بيانات 25 فرد", timestamp: "منذ 4 ساعات" },
-          { type: "vote", message: "تم تسجيل 150 صوت جديد", timestamp: "منذ 6 ساعات" },
-          { type: "add", message: "تم إضافة 12 فرد جديد", timestamp: "أمس" },
-          { type: "update", message: "تم تحديث معلومات 3 قادة", timestamp: "أمس" }
+          { type: "info", message: "النظام يعمل بالبيانات المحلية", timestamp: "الآن" }
         ]
       };
       
-      setStats(mockStats);
-    } catch (error) {
-      console.error('خطأ في تحميل الإحصائيات:', error);
-      // Even on error, show mock data instead of failing
-      const mockStats: DashboardStats = {
-        totalLeaders: 15,
-        totalPersons: 450,
-        totalVotes: 2850,
-        avgVotesPerLeader: 190,
-        topLeaders: [
-          { name: "أحمد محمد علي", totalVotes: 320, personsCount: 45 },
-          { name: "فاطمة حسن محمود", totalVotes: 285, personsCount: 38 },
-          { name: "محمد عبدالله سالم", totalVotes: 260, personsCount: 42 }
-        ],
-        recentActivity: [
-          { type: "add", message: "تم إضافة قائد جديد", timestamp: "منذ ساعتين" },
-          { type: "update", message: "تم تحديث البيانات", timestamp: "منذ 4 ساعات" }
-        ]
-      };
-      setStats(mockStats);
-    } finally {
+      setStats(fallbackStats);
       setLoading(false);
     }
-  };
+  }, [calculateStatsFromData]);
+
+  useEffect(() => {
+    loadDashboardStatsCallback();
+  }, [loadDashboardStatsCallback]);
+
+  const fetchDashboardStats = useCallback(() => {
+    loadDashboardStatsCallback();
+  }, [loadDashboardStatsCallback]);
 
   if (loading) {
     return (
@@ -118,7 +157,7 @@ export default function Dashboard() {
         <div className="container mx-auto">
           <div className="text-center">
             <p className="text-xl formal-subtitle">لم يتم العثور على بيانات</p>
-            <Button onClick={fetchDashboardStats} className="mt-6 btn-formal">
+            <Button onClick={loadDashboardStatsCallback} className="mt-6 btn-formal">
               إعادة المحاولة
             </Button>
           </div>
@@ -289,7 +328,7 @@ export default function Dashboard() {
                 <Button
                   variant="outline"
                   className="h-20 flex flex-col items-center gap-3 formal-shadow border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-300"
-                  onClick={fetchDashboardStats}>
+                  onClick={loadDashboardStatsCallback}>
 
                   <BarChart3 size={24} className="text-blue-600" />
                   <span className="font-semibold">تحديث الإحصائيات</span>
