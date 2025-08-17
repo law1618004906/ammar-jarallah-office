@@ -105,7 +105,7 @@ export default function EnhancedSearch({
       if (item.workplace) workplaces.add(item.workplace);
       if (item.residence) residences.add(item.residence);
       if (type === 'persons' && 'leader_name' in item && item.leader_name) {
-        leaders.add(item.leader_name);
+        leaders.add(String(item.leader_name));
       }
     });
 

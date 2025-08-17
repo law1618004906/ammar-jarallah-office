@@ -24,13 +24,13 @@ export default function IndividualsManagement() {
   const { toast } = useToast();
   const { refreshData } = useDataRefresh();
 
-  const loadPersonsCallback = useCallback(async () => {
+  const loadPersonsCallback = useCallback(() => {
     try {
       setLoading(true);
       const timer = performance.now();
       
-      // استخدام التحميل السريع
-      const persons = await fastLoadPersons();
+      // استخدام التحميل السريع (synchronous)
+      const persons = fastLoadPersons();
       
       const loadTime = performance.now() - timer;
       console.log(`⚡ تم تحميل ${persons.length} فرد في ${Math.round(loadTime)}ms`);
@@ -60,8 +60,8 @@ export default function IndividualsManagement() {
     try {
       const timer = performance.now();
       
-      // استخدام الحذف السريع
-      const success = await fastDeletePerson(personId);
+      // استخدام الحذف السريع (synchronous)
+      const success = fastDeletePerson(personId);
       
       if (success) {
         const deleteTime = performance.now() - timer;
@@ -99,10 +99,19 @@ export default function IndividualsManagement() {
     setDisplayedPersons(updatedPersons);
   };
 
-  const handlePersonUpdated = (updatedPersonData: Person) => {
-    const updatedPerson = {
-      ...updatedPersonData,
-      created_at: allPersons.find(p => p.id === updatedPersonData.id)?.created_at || new Date().toISOString(),
+  const handlePersonUpdated = (updatedPersonData: Partial<Person> & { id: number }) => {
+    const existingPerson = allPersons.find(p => p.id === updatedPersonData.id);
+    const updatedPerson: Person = {
+      id: updatedPersonData.id,
+      leader_name: updatedPersonData.leader_name || existingPerson?.leader_name || '',
+      full_name: updatedPersonData.full_name || existingPerson?.full_name || '',
+      residence: updatedPersonData.residence || existingPerson?.residence || '',
+      phone: updatedPersonData.phone || existingPerson?.phone || '',
+      workplace: updatedPersonData.workplace || existingPerson?.workplace || '',
+      center_info: updatedPersonData.center_info || existingPerson?.center_info || '',
+      station_number: updatedPersonData.station_number || existingPerson?.station_number || '',
+      votes_count: updatedPersonData.votes_count || existingPerson?.votes_count || 0,
+      created_at: existingPerson?.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
     const updatedPersons = allPersons.map(person => 
